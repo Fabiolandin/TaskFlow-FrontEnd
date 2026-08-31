@@ -5,6 +5,8 @@ import { useState } from "react";
 import LabelsMock, { type LabelMock } from "@/labels";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Pencil, PinIcon, XIcon } from "lucide-react";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { toast } from "sonner";
 
 const Labels = () => {
 
@@ -12,6 +14,14 @@ const Labels = () => {
     const [open, setOpen] = useState(false)
 
     const [labels, setLabels] = useState<LabelMock[]>(LabelsMock)
+
+    const deletLabel = async (id) => {
+        try {
+            toast.success("Label deletada com sucesso")
+        } catch (error) {
+            toast.error("Label não foi deletada")
+        }
+    }
 
     return (
         <Layout>
@@ -42,9 +52,19 @@ const Labels = () => {
                                     <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
                                         <Pencil className="size-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
-                                        <XIcon className="size-4" />
-                                    </Button>
+
+                                    <ConfirmDeleteDialog
+                                        trigger={
+                                            <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
+                                                <XIcon size={4} className="text-red-400 hover:text-red-600 transition-colors cursor-pointer" />
+                                            </Button>
+                                        }
+                                        id={label.id}
+                                        titulo={label.nome}
+                                        descricao="Label de projetos"
+                                        funcao={() => deletLabel(label.id)}
+                                    />
+
                                 </TableCell>
                             </TableRow>
                         ))}
