@@ -1,8 +1,10 @@
+import Layout from "@/components/Layout";
+
 const MinhasTarefas = () => {
     return (
-        <div>
+        <Layout>
             <h1>Pagina de MinhasTarefas</h1>
-        </div>
+        </Layout>
     );
 };
 
