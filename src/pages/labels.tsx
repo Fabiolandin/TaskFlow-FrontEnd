@@ -27,7 +27,7 @@ const Labels = () => {
         <Layout>
             <div className="flex flex-row">
                 <h1 className="text-2xl font-bold text-white">Labels</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2"> cadastradas</p>
+                <p className="text-sm text-zinc-400 mt-2 ml-2"> {labels.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Nova Label
                 </Button>

@@ -25,10 +25,10 @@ const Usuarios = () => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Labels</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2"> cadastradas</p>
+                <h1 className="text-2xl font-bold text-white">Usuarios</h1>
+                <p className="text-sm text-zinc-400 mt-2 ml-2"> {usuarios.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
-                    Nova Label
+                    Novo Usuário
                 </Button>
             </div>
             <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
@@ -60,7 +60,7 @@ const Usuarios = () => {
                                         }
                                         id={usuario.id}
                                         titulo={usuario.nome}
-                                        descricao="Label de projetos"
+                                        descricao="Usuário"
                                         funcao={() => deletUsuario(usuario.id)}
                                     />
 
