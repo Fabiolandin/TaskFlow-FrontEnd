@@ -1,9 +1,18 @@
-import { Home, Users, PlusIcon, Package, Truck, ShoppingCart, Package2Icon, LogOutIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { LogOutIcon } from "lucide-react";
 
 export default function Sidebar() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     return (
         <aside
             className="bg-[#0E1012] text-white transition-all duration-300 h-screen flex flex-col w-64 p-4"
@@ -48,10 +57,10 @@ export default function Sidebar() {
                         </Link>
                     </Button>
 
-                    {/* <Button variant="link" onClick={handleLogout} className="mt-auto text-red-400 hover:text-red-300 justify-start w-full gap-3">
+                     <Button variant="link" onClick={handleLogout} className="mt-auto text-red-400 hover:text-red-300 justify-start w-full gap-3">
                     <LogOutIcon size={20} className="shrink-0" />
                     <span className="text-sm font-medium">Sair</span>
-                </Button> */}
+                </Button> 
 
                 </nav>
         </aside>
