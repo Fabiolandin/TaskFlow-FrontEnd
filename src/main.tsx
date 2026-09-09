@@ -30,44 +30,44 @@ import ProtectedRoute from './components/ProtectedRoute.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-    <AuthProvider>
-    <Routes>
-      <Route>
-        <Route path="/login" element={<Login />} />
+      <AuthProvider>
+        <Routes>
+          <Route>
+            <Route path="/login" element={<Login />} />
 
-        <Route path="/" element={
-          <ProtectedRoute>
-          <App />
-          </ProtectedRoute>
-          } />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <App />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/minhas-tarefas" element={
-          <ProtectedRoute>
-            <MinhasTarefas />
-          </ProtectedRoute>
-        } />
+            <Route path="/minhas-tarefas" element={
+              <ProtectedRoute>
+                <MinhasTarefas />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/projetos" element={
-          <ProtectedRoute>
-            <Projetos />
-          </ProtectedRoute>
-        } />
+            <Route path="/projetos" element={
+              <ProtectedRoute>
+                <Projetos />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/labels" element={
-          <ProtectedRoute>
-            <Labels />
-          </ProtectedRoute>
-        } />
+            <Route path="/labels" element={
+              <ProtectedRoute>
+                <Labels />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/usuarios" element={
-          <ProtectedRoute>
-            <Usuarios />
-          </ProtectedRoute>
-        } />
-        
-      </Route>
-    </Routes>
-    </AuthProvider>
+            <Route path="/usuarios" element={
+              <ProtectedRoute>
+                <Usuarios />
+              </ProtectedRoute>
+            } />
+
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
     <Toaster />
   </StrictMode>

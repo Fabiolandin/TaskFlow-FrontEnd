@@ -6,7 +6,7 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
-const ProtectedRoute = ({ children } :  AuthProviderProps) => {
+const ProtectedRoute = ({ children }: AuthProviderProps) => {
     const { isAuthenticated } = useAuth();
 
     if (!isAuthenticated) {
