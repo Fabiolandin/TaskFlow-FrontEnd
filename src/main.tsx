@@ -25,6 +25,7 @@ import MinhasTarefas from './pages/minhas-tarefas.tsx'
 import Labels from './pages/labels.tsx'
 import Usuarios from './pages/usuarios.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
+import ProtectedRoute from './components/ProtectedRoute.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -32,12 +33,38 @@ createRoot(document.getElementById('root')!).render(
     <AuthProvider>
     <Routes>
       <Route>
-        <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/minhas-tarefas" element={<MinhasTarefas />} />
-        <Route path="/projetos" element={<Projetos />} />
-        <Route path="/labels" element={<Labels />} />
-        <Route path="/usuarios" element={<Usuarios />} />
+
+        <Route path="/" element={
+          <ProtectedRoute>
+          <App />
+          </ProtectedRoute>
+          } />
+
+        <Route path="/minhas-tarefas" element={
+          <ProtectedRoute>
+            <MinhasTarefas />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/projetos" element={
+          <ProtectedRoute>
+            <Projetos />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/labels" element={
+          <ProtectedRoute>
+            <Labels />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/usuarios" element={
+          <ProtectedRoute>
+            <Usuarios />
+          </ProtectedRoute>
+        } />
+        
       </Route>
     </Routes>
     </AuthProvider>
