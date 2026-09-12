@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "@/fetchs/fetchAuth";
 import { useAuth } from "@/context/AuthContext";
@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+
+export interface LoginUser {
+    email: string;
+    senha: string;
+}
+
+export interface LoginResponse {
+    access_token: string;
+}
 
 const Login = () => {
     //state para receber email, senha e o loading
@@ -19,7 +28,7 @@ const Login = () => {
     //para redirecionamento
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
+    const handleLogin = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         try {
