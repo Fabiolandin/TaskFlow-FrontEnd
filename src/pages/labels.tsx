@@ -1,27 +1,51 @@
 import DialogNewLabel from "@/components/DialogNewLabel";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import LabelsMock, { type LabelMock } from "@/labels";
+import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pencil, PinIcon, XIcon } from "lucide-react";
+import { Pencil, XIcon } from "lucide-react";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { toast } from "sonner";
+import { deleteLabel, fetchLabels } from "@/fetchs/fetchLabel";
+
+export interface Label {
+    id: number;
+    nome: string;
+    createdAt: string;
+}
 
 const Labels = () => {
 
     //state para abrir dialog de criação
     const [open, setOpen] = useState(false)
+    const [openDetails, setOpenDetails] = useState(false)
 
-    const [labels, setLabels] = useState<LabelMock[]>(LabelsMock)
+    //state para receber as labels
+    const [labels, setLabels] = useState<Label[]>([])
+    const [labelSelecionada, setLabelSelecionada] = useState<Label | null>(null)
 
-    const deletLabel = async (id) => {
+    const getDados = async () => {
+        try{
+            const resposta = await fetchLabels()
+            setLabels(resposta)
+        }catch (error) {
+            toast.error("Erro ao buscar Labels")
+        }
+    }
+
+    const deletLabel = async (id: number) => {
         try {
+            await deleteLabel(id)
             toast.success("Label deletada com sucesso")
+            await getDados() // atualiza a lista após deleção
         } catch (error) {
             toast.error("Label não foi deletada")
         }
     }
+
+    useEffect(() => {
+        getDados()
+    }, [])
 
     return (
         <Layout>
