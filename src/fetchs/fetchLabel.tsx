@@ -23,6 +23,6 @@ export const deleteLabel = async(id: number) => {
 export const updateLabel = async(id: number, nome: string) => {
     return apiClient(`/labels/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(nome),
+        body: JSON.stringify({ nome }),
     });
 }
