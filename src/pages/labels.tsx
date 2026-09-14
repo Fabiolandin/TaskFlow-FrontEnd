@@ -6,7 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, XIcon } from "lucide-react";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { toast } from "sonner";
-import { deleteLabel, fetchLabels } from "@/fetchs/fetchLabel";
+import { createLabel, deleteLabel, fetchLabels, updateLabel } from "@/fetchs/fetchLabel";
+import DialogDetailsLabel from "@/components/DialogDetailsLabel";
+import { formatarData } from "@/utils/formaters/fdata";
 
 export interface Label {
     id: number;
@@ -28,8 +30,31 @@ const Labels = () => {
         try{
             const resposta = await fetchLabels()
             setLabels(resposta)
+            console.log(resposta)
         }catch (error) {
             toast.error("Erro ao buscar Labels")
+        }
+    }
+
+    const criarLabel = async (nome: string) => {
+        try{
+            await createLabel(nome)
+            toast.success("Label criada com sucesso!")
+            await getDados()
+        } catch(error) {
+            toast.error("Erro ao criar label")
+            throw error
+        }
+    }
+
+    const editarLabel = async (id: number, nome: string) => {
+        try{
+            await updateLabel(id, nome)
+            toast.success("Label editada com sucesso")
+            await getDados()
+        } catch(error) {
+            toast.error("Erro ao editar label")
+            throw error
         }
     }
 
@@ -41,6 +66,12 @@ const Labels = () => {
         } catch (error) {
             toast.error("Label não foi deletada")
         }
+    }
+
+    //funcao para abrir o dialog e mandar label selecionada
+    const handleDialogOpen = (label: Label) => {
+        setLabelSelecionada(label);
+        setOpenDetails(true)
     }
 
     useEffect(() => {
@@ -71,9 +102,9 @@ const Labels = () => {
                             <TableRow key={label.id} className="border-white/10 hover:bg-[#151A1E]">
                                 <TableCell className="font-mono text-zinc-500">#{label.id}</TableCell>
                                 <TableCell className="font-medium text-white">{label.nome}</TableCell>
-                                <TableCell className="font-mono text-zinc-400">{label.createdAt}</TableCell>
+                                <TableCell className="font-mono text-zinc-400">{formatarData(label.createdAt)}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
+                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white" onClick={() => handleDialogOpen(label)}>
                                         <Pencil className="size-4" />
                                     </Button>
 
@@ -98,7 +129,8 @@ const Labels = () => {
 
 
 
-            <DialogNewLabel open={open} onOpenChange={setOpen} />
+            <DialogNewLabel open={open} onOpenChange={setOpen} onCreateLabel={criarLabel}/>
+            <DialogDetailsLabel open={openDetails} onOpenChange={setOpenDetails} labelSelecionada={labelSelecionada} onEditLabel={editarLabel}/>
         </Layout>
     );
 };
