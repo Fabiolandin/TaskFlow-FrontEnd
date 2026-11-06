@@ -24,6 +24,7 @@ import Projetos from './pages/projetos.tsx'
 import MinhasTarefas from './pages/minhas-tarefas.tsx'
 import Labels from './pages/labels.tsx'
 import Usuarios from './pages/usuarios.tsx'
+import Status from './pages/status.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 
@@ -62,6 +63,12 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/usuarios" element={
               <ProtectedRoute>
                 <Usuarios />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/status" element={
+              <ProtectedRoute>
+                <Status />
               </ProtectedRoute>
             } />
 

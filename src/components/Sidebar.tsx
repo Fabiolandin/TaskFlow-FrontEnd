@@ -57,6 +57,12 @@ export default function Sidebar() {
                     </Link>
                 </Button>
 
+                <Button asChild variant="link" className="text-zinc-400 hover:text-white justify-start w-full gap-3">
+                    <Link to="/status" className="flex items-center">
+                        <span className="text-sm font-medium">道 Status</span>
+                    </Link>
+                </Button>
+
                 <Button variant="link" onClick={handleLogout} className="mt-auto text-red-400 hover:text-red-300 justify-start w-full gap-3">
                     <LogOutIcon size={20} className="shrink-0" />
                     <span className="text-sm font-medium">Sair</span>
