@@ -1,6 +1,19 @@
 //Le a variavel da .env
 const API_URL = import.meta.env.VITE_API_URL;
 
+//erro de resposta não-ok: carrega o status HTTP e a message do corpo, quando ela é string (SPEC-002)
+export class ApiError extends Error {
+    status: number;
+    mensagemDaApi: string | undefined;
+
+    constructor(status: number, mensagemDaApi: string | undefined, textoOriginal: string) {
+        super(mensagemDaApi ?? textoOriginal);
+        this.name = "ApiError";
+        this.status = status;
+        this.mensagemDaApi = mensagemDaApi;
+    }
+}
+
 export async function apiClient<T>(
     //Só a parte que muda
     endpoint: string,
@@ -30,7 +43,15 @@ export async function apiClient<T>(
 
     if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(errorText || `Erro na requisição: ${res.status}`);
+        //extrai a message do corpo { statusCode, message } só quando ela é string (SPEC-002)
+        let mensagemDaApi: string | undefined;
+        try {
+            const corpo = JSON.parse(errorText);
+            if (typeof corpo?.message === "string") mensagemDaApi = corpo.message;
+        } catch {
+            //corpo não é JSON: fica sem mensagem da API
+        }
+        throw new ApiError(res.status, mensagemDaApi, errorText || `Erro na requisição: ${res.status}`);
     }
 
     if (res.status === 204) return null as T;

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { createLabel, deleteLabel, fetchLabels, updateLabel } from "@/fetchs/fetchLabel";
 import DialogDetailsLabel from "@/components/DialogDetailsLabel";
 import { formatarData } from "@/utils/formaters/fdata";
+import { ApiError } from "@/api/apiClient";
 
 export interface Label {
     id: number;
@@ -64,7 +65,8 @@ const Labels = () => {
             toast.success("Label deletada com sucesso")
             await getDados() // atualiza a lista após deleção
         } catch (error) {
-            toast.error("Label não foi deletada")
+            //409 (registro em uso): mostra o motivo vindo da API; qualquer outra falha, o texto fixo (SPEC-002)
+            toast.error(error instanceof ApiError && error.status === 409 && error.mensagemDaApi ? error.mensagemDaApi : "Label não foi deletada")
         }
     }
 

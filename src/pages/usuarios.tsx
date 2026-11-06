@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import DialogUsuario from "@/components/DialogNewUsuario";
 import { createUsuario, deleteUsuario, fetchUsuarios, updateUsuario } from "@/fetchs/fetchUsuarios";
 import DialogDetailsUsuario from "@/components/DialogDetailsUsuario";
+import { ApiError } from "@/api/apiClient";
 
 export interface Usuario {
     id: number;
@@ -63,7 +64,8 @@ const Usuarios = () => {
             toast.success("Usuário deletado com sucesso")
             await getDados() // Atualiza a lista de usuários após a deleção
         } catch (error) {
-            toast.error("Usuário não foi deletado")
+            //409 (registro em uso): mostra o motivo vindo da API; qualquer outra falha, o texto fixo (SPEC-002)
+            toast.error(error instanceof ApiError && error.status === 409 && error.mensagemDaApi ? error.mensagemDaApi : "Usuário não foi deletado")
         }
     }
 
