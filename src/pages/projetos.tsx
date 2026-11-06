@@ -10,7 +10,7 @@ const Projetos = () => {
     const [open, setOpen] = useState(false);
 
     //state para receber lista de projetos dados mockados
-    const [projetos, setProjetos] = useState<Projeto[]>(ProjetosMock);
+    const [projetos] = useState<Projeto[]>(ProjetosMock);
 
     return (
         <Layout>

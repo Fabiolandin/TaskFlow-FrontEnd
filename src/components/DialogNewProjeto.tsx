@@ -28,7 +28,7 @@ const DialogNewProjeto = ({ open, onOpenChange }: DialogNewProjetoProps) => {
     ]
 
     //State para receber lista de membros
-    const [membros, setMembros] = useState<Membro[]>(Membros);
+    const [membros] = useState<Membro[]>(Membros);
 
     //State para controlar o status selecionado no Select
     const [status, setStatus] = useState<string>("");
