@@ -18,7 +18,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Login from './pages/login.tsx'
-import App from './App.tsx'
+import Dashboard from './pages/dashboard.tsx'
 import { Toaster } from 'sonner'
 import Projetos from './pages/projetos.tsx'
 import MinhasTarefas from './pages/minhas-tarefas.tsx'
@@ -39,7 +39,7 @@ createRoot(document.getElementById('root')!).render(
 
             <Route path="/" element={
               <ProtectedRoute>
-                <App />
+                <Dashboard />
               </ProtectedRoute>
             } />
 
