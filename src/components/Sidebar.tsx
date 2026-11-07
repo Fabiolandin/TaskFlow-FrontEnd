@@ -34,6 +34,12 @@ export default function Sidebar() {
                 </Button>
 
                 <Button asChild variant="link" className="text-zinc-400 hover:text-white justify-start w-full gap-3">
+                    <Link to="/tarefas" className="flex items-center">
+                        <span className="text-sm font-medium">仕 Tarefas</span>
+                    </Link>
+                </Button>
+
+                <Button asChild variant="link" className="text-zinc-400 hover:text-white justify-start w-full gap-3">
                     <Link to="/minhas-tarefas" className="flex items-center">
                         <span className="text-sm font-medium">友 Minhas Tarefas</span>
                     </Link>
