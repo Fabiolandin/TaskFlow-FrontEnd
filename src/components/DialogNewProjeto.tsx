@@ -14,7 +14,7 @@ interface DialogNewProjetoProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     //devolve se o projeto foi gravado; os toasts são da página
-    onCreateProjeto: (dados: DadosProjeto, idsMembros: number[]) => Promise<boolean>;
+    onCreateProjeto: (dados: DadosProjeto) => Promise<boolean>;
 }
 
 const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProjetoProps) => {
@@ -30,6 +30,21 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
     const [dataInicio, setDataInicio] = useState("");
     const [membrosSelecionados, setMembrosSelecionados] = useState<number[]>([]);
     const [salvando, setSalvando] = useState(false);
+
+    //cada abertura começa vazia (RF-23): zera ao abrir, e não ao fechar, para que Cancelar, ESC e
+    //clique fora descartem a seleção, e uma falha ao gravar mantenha os campos com o dialog aberto.
+    //Ajuste de estado durante o render (padrão do React para reagir a mudança de prop), não useEffect.
+    const [abertoAntes, setAbertoAntes] = useState(open);
+    if (open !== abertoAntes) {
+        setAbertoAntes(open);
+        if (open) {
+            setNome("");
+            setDescricao("");
+            setStatus("");
+            setDataInicio("");
+            setMembrosSelecionados([]);
+        }
+    }
 
     //busca as opções a cada abertura, para refletir status e usuários novos
     useEffect(() => {
@@ -55,16 +70,12 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
     const handleCreateProjeto = async () => {
         if (!podeCriar) return;
         setSalvando(true);
-        const gravou = await onCreateProjeto(montarDadosProjeto({ nome, descricao, idStatus: status, dataInicio }), membrosSelecionados);
+        const dados = montarDadosProjeto({ nome, descricao, idStatus: status, dataInicio });
+        if (membrosSelecionados.length) dados.membros = membrosSelecionados;
+        const gravou = await onCreateProjeto(dados);
         setSalvando(false);
         //falhou: o dialog continua aberto com os campos preenchidos
-        if (!gravou) return;
-        setNome("");
-        setDescricao("");
-        setStatus("");
-        setDataInicio("");
-        setMembrosSelecionados([]);
-        onOpenChange(false);
+        if (gravou) onOpenChange(false);
     }
 
     return (

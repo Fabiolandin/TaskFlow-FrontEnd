@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
-import { toast } from "sonner";
 
 interface DialogDetailsUsuarioProps {
     open: boolean;
@@ -27,8 +26,8 @@ const DialogDetailsUsuario = ({ open, onOpenChange, usuarioSelecionado, onEditUs
             setEmailEdit("");
             setSenhaEdit("");
             onOpenChange(false); // Fecha o diálogo após a criação
-        } catch(error){
-            toast.error("Erro ao criar usuário");
+        } catch {
+            // o toast de erro já é mostrado pela página; aqui só mantém o diálogo aberto
         }
     }
 

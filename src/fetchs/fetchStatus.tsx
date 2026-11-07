@@ -18,6 +18,13 @@ export interface DadosStatus {
     isFinal: boolean;
 }
 
+//cor do status: vazia (sem cor) ou #RRGGBB, como a API exige (RF-21, SPEC-014)
+export const AVISO_COR = "Use o formato #RRGGBB (ex.: #E5484D)";
+export const corValida = (cor: string) => {
+    const valor = cor.trim();
+    return valor === "" || /^#[0-9A-Fa-f]{6}$/.test(valor);
+}
+
 const rotaDoTipo = (tipo: TipoStatus) => (tipo === "projeto" ? "/statusprojeto" : "/statustarefa");
 
 //a API já devolve ordenado por `ordem`

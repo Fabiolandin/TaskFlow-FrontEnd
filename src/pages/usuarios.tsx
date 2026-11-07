@@ -42,7 +42,8 @@ const Usuarios = () => {
             toast.success("Usuário criado com sucesso")
             await getDados() // Atualiza a lista de usuários após a criação
         } catch (error) {
-            toast.error("Erro ao criar usuário")
+            //409 (ex.: email já em uso): mostra o motivo vindo da API; qualquer outra falha, o texto fixo
+            toast.error(error instanceof ApiError && error.status === 409 && error.mensagemDaApi ? error.mensagemDaApi : "Erro ao criar usuário")
             throw error
         }
     }
@@ -53,7 +54,7 @@ const Usuarios = () => {
             toast.success("Usuário atualizado com sucesso")
             await getDados() // Atualiza a lista de usuários após a atualização
         } catch(error){
-            toast.error("Erro ao atualizar usuário")
+            toast.error(error instanceof ApiError && error.status === 409 && error.mensagemDaApi ? error.mensagemDaApi : "Erro ao atualizar usuário")
             throw error
         }
     }

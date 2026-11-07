@@ -32,12 +32,13 @@ export interface CamposProjeto {
     dataInicio: string;
 }
 
-//corpo do POST /projetos
+//corpo do POST /projetos; os membros vão junto e são gravados com o projeto, ou nada é gravado (RF-28)
 export interface DadosProjeto {
     nome: string;
     descricao?: string;
     idStatus: number;
     data_inicio?: string;
+    membros?: number[];
 }
 
 //campos opcionais em branco não vão no corpo; a data vai como AAAA-MM-DD
@@ -54,9 +55,9 @@ export const fetchProjetos = async (page: number, limit: number = LIMITE_PROJETO
     });
 }
 
-//o retorno do POST não traz status nem membros: a tela recarrega a lista depois
+//o retorno do POST tem o formato do GET /projetos/:id (com status e membros)
 export const createProjeto = async (dados: DadosProjeto) => {
-    return apiClient<{ id: number; nome: string }>(`/projetos`, {
+    return apiClient<Projeto>(`/projetos`, {
         method: "POST",
         body: JSON.stringify(dados),
     });

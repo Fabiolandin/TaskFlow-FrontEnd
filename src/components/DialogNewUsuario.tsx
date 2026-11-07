@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
-import { toast } from "sonner";
 
 interface DialogNewUsuarioProps {
     open: boolean;
@@ -25,8 +24,8 @@ const DialogUsuario = ({ open, onOpenChange, onCreateUsuario }: DialogNewUsuario
             setEmail("");
             setSenha("");
             onOpenChange(false); // Fecha o diálogo após a criação
-        } catch(error){
-            toast.error("Erro ao criar usuário");
+        } catch {
+            // o toast de erro já é mostrado pela página; aqui só mantém o diálogo aberto
         }
     }
 

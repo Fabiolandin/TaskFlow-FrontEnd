@@ -1,10 +1,11 @@
 import DialogNewProjeto from "@/components/DialogNewProjeto";
+import DialogMembrosProjeto from "@/components/DialogMembrosProjeto";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createProjeto, fetchProjetos, LIMITE_PROJETOS, type DadosProjeto, type PaginaProjetos } from "@/fetchs/fetchProjetos";
-import { addMembros } from "@/fetchs/fetchMembros";
+import { createProjeto, fetchProjetos, LIMITE_PROJETOS, type DadosProjeto, type PaginaProjetos, type Projeto } from "@/fetchs/fetchProjetos";
+import { ApiError } from "@/api/apiClient";
 import { formatarDia } from "@/utils/formaters/fdata";
 
 const PAGINA_VAZIA: PaginaProjetos = { data: [], total: 0, page: 1, totalPages: 0 };
@@ -13,6 +14,9 @@ const Projetos = () => {
 
     //States para o dialog
     const [open, setOpen] = useState(false);
+    //dialog de membros de um projeto existente (SPEC-013)
+    const [openMembros, setOpenMembros] = useState(false);
+    const [projetoSelecionado, setProjetoSelecionado] = useState<Projeto | null>(null);
 
     //página atual vinda da API: { data, total, page, totalPages }
     const [resposta, setResposta] = useState<PaginaProjetos>(PAGINA_VAZIA);
@@ -27,27 +31,32 @@ const Projetos = () => {
         }
     }
 
-    //grava o projeto e depois os membros; devolve se o projeto foi gravado (o dialog fecha só nesse caso)
-    const criarProjeto = async (dados: DadosProjeto, idsMembros: number[]) => {
-        let idProjeto: number;
+    //projeto e membros numa gravação só (RF-28); devolve se gravou (o dialog fecha só nesse caso)
+    const criarProjeto = async (dados: DadosProjeto) => {
         try {
-            idProjeto = (await createProjeto(dados)).id;
-        } catch {
-            toast.error("Erro ao criar projeto");
+            await createProjeto(dados);
+        } catch (error) {
+            //nada foi gravado: mostra o motivo quando a API manda a message em texto
+            const motivo = error instanceof ApiError ? error.mensagemDaApi : undefined;
+            toast.error(motivo ? `Erro ao criar projeto: ${motivo}` : "Erro ao criar projeto");
             return false;
         }
-
-        //o projeto já existe: membro recusado vira aviso, não impede fechar (repetir criaria outro projeto)
-        const naoAdicionados = await addMembros(idProjeto, idsMembros);
-        if (naoAdicionados.length) {
-            toast.error(`Projeto criado, mas ${naoAdicionados.length} membro(s) não foram adicionados: ${naoAdicionados[0].mensagem}`);
-        } else {
-            toast.success("Projeto criado com sucesso!");
-        }
+        toast.success("Projeto criado com sucesso!");
 
         //o projeto novo é o último (a API ordena por id): vai para a última página
         await getDados(Math.ceil((resposta.total + 1) / LIMITE_PROJETOS));
         return true;
+    }
+
+    const abrirMembros = (projeto: Projeto) => {
+        setProjetoSelecionado(projeto);
+        setOpenMembros(true);
+    }
+
+    //cada clique no dialog já gravou; ao fechar, o cartão passa a mostrar os membros gravados, na mesma página
+    const mudarDialogMembros = (aberto: boolean) => {
+        setOpenMembros(aberto);
+        if (!aberto) getDados(pagina);
     }
 
     useEffect(() => {
@@ -89,6 +98,9 @@ const Projetos = () => {
                         <hr className="border-gray-600" />
                         <div className="flex flex-row items-center gap-2">
                             <p className="text-sm text-zinc-400">Inicio: {formatarDia(projeto.data_inicio)}</p>
+                            <Button variant="ghost" size="sm" className="ml-auto text-gray-400" onClick={() => abrirMembros(projeto)}>
+                                Membros
+                            </Button>
                         </div>
 
                     </article>
@@ -106,6 +118,7 @@ const Projetos = () => {
             </div>
 
             <DialogNewProjeto open={open} onOpenChange={setOpen} onCreateProjeto={criarProjeto} />
+            <DialogMembrosProjeto open={openMembros} onOpenChange={mudarDialogMembros} projeto={projetoSelecionado} />
         </Layout>
     );
 };

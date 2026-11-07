@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import type { DadosStatus, Status } from "@/fetchs/fetchStatus";
+import { AVISO_COR, corValida } from "@/fetchs/fetchStatus";
 
 interface DialogDetailsStatusProps {
     open: boolean;
@@ -20,8 +21,8 @@ const DialogDetailsStatus = ({ open, onOpenChange, statusSelecionado, onEditStat
     const [ordem, setOrdem] = useState(statusSelecionado ? String(statusSelecionado.ordem) : "");
     const [isFinal, setIsFinal] = useState(statusSelecionado?.isFinal ?? false);
 
-    //nome e ordem (inteiro) são obrigatórios na API; cor e isFinal não
-    const valido = nome.trim() !== "" && ordem.trim() !== "" && Number.isInteger(Number(ordem));
+    //nome e ordem (inteiro) são obrigatórios na API; cor é opcional, mas se vier é #RRGGBB
+    const valido = nome.trim() !== "" && ordem.trim() !== "" && Number.isInteger(Number(ordem)) && corValida(cor);
 
     const handleSubmit = async () => {
         if (!statusSelecionado || !valido) return;
@@ -61,6 +62,7 @@ const DialogDetailsStatus = ({ open, onOpenChange, statusSelecionado, onEditStat
                     value={cor}
                     onChange={(e) => setCor(e.target.value)}
                     />
+                    {!corValida(cor) && <p className="text-red-400 text-[12px] -mt-1 mb-2">{AVISO_COR}</p>}
 
                     <p className="text-gray-400 text-[13px]">Ordem</p>
                     <Input
