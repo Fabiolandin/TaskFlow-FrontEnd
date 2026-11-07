@@ -1,7 +1,10 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
+
+import { lerUsuarioDoToken, type UsuarioLogado } from "@/utils/token";
 
 interface AuthContextType {
     token: string | null;
+    usuario: UsuarioLogado | null;
     login: (novoToken: string) => void;
     logout: () => void;
     isAuthenticated: boolean;
@@ -15,7 +18,11 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     //lendo o token do localstorage para que o reload continue logado
-    const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+    const [token, setToken] = useState<string | null>(() => {
+        const salvo = localStorage.getItem("token");
+        //token ilegível não serve: sai da sessão e o ProtectedRoute leva ao login
+        return lerUsuarioDoToken(salvo) ? salvo : null;
+    });
 
     //ativa toda vez que o token atualiza, se tiver token salva se não tiver remove
     useEffect(() => {
@@ -26,8 +33,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
     }, [token]);
 
+    const usuario = useMemo(() => lerUsuarioDoToken(token), [token]);
+
     const login = (novoToken: string) => {
-        setToken(novoToken);
+        setToken(lerUsuarioDoToken(novoToken) ? novoToken : null);
     };
 
     const logout = () => {
@@ -35,7 +44,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     return (
-        <AuthContext.Provider value={{ token, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ token, usuario, login, logout, isAuthenticated: !!token && !!usuario }}>
             {children}
         </AuthContext.Provider>
     );

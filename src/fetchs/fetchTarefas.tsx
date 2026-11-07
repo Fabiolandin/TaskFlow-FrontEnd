@@ -47,6 +47,8 @@ export interface FiltrosTarefa {
     idStatus?: number;
     idUsuarioResponsavel?: number;
     idLabel?: number;
+    //responsável OU criador (RF-38)
+    idUsuarioEnvolvido?: number;
 }
 
 //o que o formulário guarda (tudo string, como vem dos inputs; "" = não escolhido)

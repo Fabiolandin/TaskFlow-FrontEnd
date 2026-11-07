@@ -59,3 +59,9 @@ export async function apiClient<T>(
     const text = await res.text();
     return text ? JSON.parse(text) : (null as T);
 }
+
+//mensagem da API quando ela manda texto; senão, só o texto fixo (usado nos toasts de erro)
+export const comMotivo = (texto: string, error: unknown) => {
+    const motivo = error instanceof ApiError ? error.mensagemDaApi : undefined;
+    return motivo ? `${texto}: ${motivo}` : texto;
+}

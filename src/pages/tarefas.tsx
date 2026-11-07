@@ -3,8 +3,7 @@ import DialogDetailsTarefa from "@/components/DialogDetailsTarefa";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pencil } from "lucide-react";
+import ListaTarefas from "@/components/ListaTarefas";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/api/apiClient";
@@ -13,7 +12,6 @@ import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
 import { fetchUsuarios } from "@/fetchs/fetchUsuarios";
 import { createTarefa, fetchTarefas, updateTarefa, type DadosEdicaoTarefa, type DadosNovaTarefa, type FiltrosTarefa, type PaginaTarefas, type Tarefa } from "@/fetchs/fetchTarefas";
-import { formatarDia } from "@/utils/formaters/fdata";
 import type { Label } from "@/pages/labels";
 import type { Usuario } from "@/pages/usuarios";
 
@@ -161,66 +159,13 @@ const Tarefas = () => {
                 {filtro("Label", "idLabel", labels)}
             </div>
 
-            <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="border-white/10 hover:bg-transparent">
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Nome</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Status</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Prioridade</TableHead>
-                            <TableHead className="font-mono text-xs uppercase tracking-wide text-zinc-400">Prazo</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Responsável</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Projeto</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Labels</TableHead>
-                            <TableHead className="text-right text-xs uppercase tracking-wide text-zinc-400">Ações</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {resposta.data.length === 0 && (
-                            <TableRow className="border-white/10 hover:bg-transparent">
-                                <TableCell colSpan={8} className="text-center text-zinc-500">Nenhuma tarefa encontrada</TableCell>
-                            </TableRow>
-                        )}
-                        {resposta.data.map((tarefa) => (
-                            <TableRow key={tarefa.id} className="border-white/10 hover:bg-[#151A1E]">
-                                <TableCell className="font-medium text-white">{tarefa.nome}</TableCell>
-                                <TableCell className="text-gray-300">
-                                    <span className="flex items-center gap-1">
-                                        {tarefa.status.cor && <span className="inline-block size-2 rounded-full" style={{ backgroundColor: tarefa.status.cor }} />}
-                                        {tarefa.status.nome}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-gray-300">{tarefa.prioridade}</TableCell>
-                                <TableCell className="font-mono text-zinc-400">{formatarDia(tarefa.data_final)}</TableCell>
-                                <TableCell className="text-gray-300">{tarefa.responsavel?.nome ?? "Sem responsável"}</TableCell>
-                                <TableCell className="text-gray-300">{tarefa.projeto.nome}</TableCell>
-                                <TableCell>
-                                    <div className="flex flex-row flex-wrap gap-1">
-                                        {tarefa.labels.map((label) => (
-                                            <span key={label.id} className="text-[11px] text-gray-400 rounded-md bg-[#151A1E] border border-[#333B44] px-2 py-0.5">{label.nome}</span>
-                                        ))}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon-sm" aria-label={`Abrir ${tarefa.nome}`} className="text-zinc-400 hover:text-white" onClick={() => abrirDetalhe(tarefa)}>
-                                        <Pencil className="size-4" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div className="flex flex-row items-center justify-center gap-4 mt-4">
-                <Button variant="ghost" className="text-gray-400" disabled={pagina <= 1} onClick={() => setConsulta((c) => ({ ...c, pagina: pagina - 1 }))}>
-                    Anterior
-                </Button>
-                <p className="text-sm text-zinc-400">Página {pagina} de {totalPaginas}</p>
-                <Button variant="ghost" className="text-gray-400" disabled={pagina >= totalPaginas} onClick={() => setConsulta((c) => ({ ...c, pagina: pagina + 1 }))}>
-                    Próxima
-                </Button>
-            </div>
+            <ListaTarefas
+                tarefas={resposta.data}
+                pagina={pagina}
+                totalPaginas={totalPaginas}
+                onPagina={(p) => setConsulta((c) => ({ ...c, pagina: p }))}
+                onAbrir={abrirDetalhe}
+            />
 
             <DialogNewTarefa key={`nova-${aberturaNova}`} open={openNova} onOpenChange={setOpenNova} onCreateTarefa={criarTarefa} {...opcoesDosDialogs} />
             <DialogDetailsTarefa key={`detalhe-${aberturaDetalhe}`} open={openDetalhe} onOpenChange={setOpenDetalhe} tarefaSelecionada={tarefaSelecionada} onEditTarefa={editarTarefa} {...opcoesDosDialogs} />
