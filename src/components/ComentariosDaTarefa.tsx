@@ -9,9 +9,27 @@ import { useAuth } from "@/context/AuthContext";
 import { createComentario, deleteComentario, fetchComentariosDaTarefa, foiEditado, updateComentario, type Comentario } from "@/fetchs/fetchComentarios";
 import { formatarDataHora } from "@/utils/formaters/fdata";
 import { dataRelativa } from "@/utils/dataRelativa";
+import ItemAtividade from "./ItemAtividade";
+import type { Atividade } from "@/fetchs/fetchAtividades";
 
-//comentários da tarefa (SPEC-007; na página da tarefa desde a SPEC-015): lista crescente, composer no fim, ações próprias
-const ComentariosDaTarefa = ({ idTarefa }: { idTarefa: number }) => {
+type Item = { tipo: "atividade"; quando: number; atividade: Atividade } | { tipo: "comentario"; quando: number; comentario: Comentario };
+const idDo = (i: Item) => (i.tipo === "atividade" ? i.atividade.id : i.comentario.id);
+
+//uma lista só, crescente por data; mesma data: a atividade antes do comentário; mesmo tipo: o id (RF-55)
+const intercalar = (atividades: Atividade[], comentarios: Comentario[]): Item[] => [
+    ...atividades.map((a): Item => ({ tipo: "atividade", quando: new Date(a.createdAt).getTime(), atividade: a })),
+    ...comentarios.map((c): Item => ({ tipo: "comentario", quando: new Date(c.createdAt).getTime(), comentario: c })),
+].sort((x, y) => x.quando - y.quando || (x.tipo === y.tipo ? idDo(x) - idDo(y) : x.tipo === "atividade" ? -1 : 1));
+
+interface ComentariosDaTarefaProps {
+    idTarefa: number;
+    //histórico lido pela página, que relê depois de cada gravação (RF-55); null enquanto não chega ou se falhou
+    atividades: Atividade[] | null;
+}
+
+//comentários da tarefa (SPEC-007; na página da tarefa desde a SPEC-015): lista crescente, composer no fim, ações próprias;
+//desde a SPEC-016 intercalados com as atividades
+const ComentariosDaTarefa = ({ idTarefa, atividades }: ComentariosDaTarefaProps) => {
     const { usuario } = useAuth();
     const [comentarios, setComentarios] = useState<Comentario[] | null>(null);
     const [novo, setNovo] = useState("");
@@ -66,15 +84,18 @@ const ComentariosDaTarefa = ({ idTarefa }: { idTarefa: number }) => {
     }
 
     return (
-        <section className="flex flex-col gap-4 border-t border-[#1C1F23] pt-5" aria-label="Comentários">
-            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Comentários</h2>
+        <section className="flex flex-col gap-4 border-t border-[#1C1F23] pt-5" aria-label="Atividade">
+            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Atividade</h2>
 
-            {comentarios !== null && comentarios.length === 0 && (
+            {comentarios !== null && comentarios.length === 0 && (atividades ?? []).length === 0 && (
                 <p className="text-[12.5px] text-[#61666C]">Nenhum comentário ainda</p>
             )}
 
-            {(comentarios ?? []).map((c) => (
-                <div key={c.id} data-testid="comentario" className="group flex flex-row gap-3">
+            {intercalar(atividades ?? [], comentarios ?? []).map((item) => {
+                if (item.tipo === "atividade") return <ItemAtividade key={`a-${item.atividade.id}`} atividade={item.atividade} />;
+                const c = item.comentario;
+                return (
+                <div key={`c-${c.id}`} data-testid="comentario" className="group flex flex-row gap-3">
                     <span data-avatar aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#232B3B] font-mono text-[11px] font-medium text-[#9BB8F0]">
                         {c.autor.nome.trim().charAt(0).toUpperCase()}
                     </span>
@@ -116,7 +137,8 @@ const ComentariosDaTarefa = ({ idTarefa }: { idTarefa: number }) => {
                         )}
                     </div>
                 </div>
-            ))}
+                );
+            })}
 
             <div className="flex flex-col gap-2">
                 <Textarea aria-label="Novo comentário" placeholder="Escreva um comentário" value={novo} onChange={(e) => setNovo(e.target.value)} className="min-h-16 border-[#24272B] bg-[#121518] text-[12.5px] text-[#E7E4DF]" />

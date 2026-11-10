@@ -1,4 +1,3 @@
-import DialogNewTarefa from "@/components/DialogNewTarefa";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +12,8 @@ import { fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
 import { fetchUsuarios } from "@/fetchs/fetchUsuarios";
-import { consultaParaUrl, createTarefa, fetchTarefas, lerConsultaDaUrl, updateTarefa, type DadosEdicaoTarefa, type DadosNovaTarefa, type FiltrosTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
+import { consultaParaUrl, fetchTarefas, lerConsultaDaUrl, updateTarefa, type DadosEdicaoTarefa, type FiltrosTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
+import { useAbrirCriarTarefa } from "@/context/CriarTarefaContext";
 import type { Label } from "@/pages/labels";
 import type { Usuario } from "@/pages/usuarios";
 
@@ -41,6 +41,12 @@ const comMotivo = (texto: string, error: unknown) => {
     return motivo ? `${texto}: ${motivo}` : texto;
 }
 
+//o dialog de criar é o único do app, hospedado pelo Layout, o mesmo da tecla C (RF-57, D-13)
+const BotaoNovaTarefa = () => {
+    const abrir = useAbrirCriarTarefa();
+    return <Button variant="destructive" onClick={abrir}>Nova Tarefa</Button>;
+}
+
 const Tarefas = () => {
 
     //página e filtros vivem na URL: abrir uma tarefa e voltar restaura a lista (RF-44, D-8)
@@ -52,17 +58,13 @@ const Tarefas = () => {
     const totalPaginas = Math.max(resposta.totalPages, 1);
     const [exibicao, setExibicao] = useState<Exibicao>(lerExibicao);
 
-    //opções dos filtros e dos dialogs, carregadas uma vez do cadastro
+    //opções dos filtros, carregadas uma vez do cadastro
     const [projetos, setProjetos] = useState<Projeto[]>([]);
     const [statusOptions, setStatusOptions] = useState<Status[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
 
-    //dialog de criar: a `key` nova a cada abertura faz o formulário nascer do zero
-    const [openNova, setOpenNova] = useState(false);
-    const [aberturaNova, setAberturaNova] = useState(0);
-
-    //relê a mesma consulta (depois de uma troca na linha ou de criar)
+    //relê a mesma consulta (depois de uma troca na linha)
     const [recarga, setRecarga] = useState(0);
 
     useEffect(() => {
@@ -119,34 +121,6 @@ const Tarefas = () => {
         setRecarga((n) => n + 1);
     }
 
-    //a API ordena por id: a tarefa nova é a última, então limpa os filtros e vai para a última página
-    const criarTarefa = async (dados: DadosNovaTarefa) => {
-        try {
-            await createTarefa(dados);
-        } catch (error) {
-            toast.error(comMotivo("Erro ao criar tarefa", error));
-            return false;
-        }
-        toast.success("Tarefa criada com sucesso!");
-        if (exibicao === "agrupado") {
-            setRecarga((n) => n + 1);
-            return true;
-        }
-        try {
-            const primeira = await fetchTarefas(1, {});
-            irPara(Math.max(primeira.totalPages, 1), {});
-        } catch {
-            irPara(1, {});
-        }
-        setRecarga((n) => n + 1);
-        return true;
-    }
-
-    const abrirNova = () => {
-        setAberturaNova((n) => n + 1);
-        setOpenNova(true);
-    }
-
     const valorDe = (chave: keyof FiltrosTarefa) => String(consulta.filtros[chave] ?? TODOS);
 
     const filtro = (rotulo: string, chave: keyof FiltrosTarefa, opcoes: { id: number; nome: string }[]) => (
@@ -176,8 +150,6 @@ const Tarefas = () => {
         </button>
     );
 
-    const opcoesDosDialogs = { projetos, statusOptions, labels };
-
     return (
         <Layout>
             <div className="flex flex-row items-center gap-3">
@@ -187,9 +159,7 @@ const Tarefas = () => {
                     {botaoExibicao("agrupado", "Agrupado", <LayoutList aria-hidden="true" className="size-3.5" />)}
                     {botaoExibicao("tabela", "Tabela", <Table2 aria-hidden="true" className="size-3.5" />)}
                 </div>
-                <Button variant="destructive" onClick={abrirNova}>
-                    Nova Tarefa
-                </Button>
+                <BotaoNovaTarefa />
             </div>
 
             <div className="mt-4 flex flex-row flex-wrap gap-2">
@@ -211,8 +181,6 @@ const Tarefas = () => {
                     onTrocar={trocarCampo}
                 />
             )}
-
-            <DialogNewTarefa key={`nova-${aberturaNova}`} open={openNova} onOpenChange={setOpenNova} onCreateTarefa={criarTarefa} {...opcoesDosDialogs} />
         </Layout>
     );
 };

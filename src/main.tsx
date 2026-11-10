@@ -21,6 +21,7 @@ import Login from './pages/login.tsx'
 import Dashboard from './pages/dashboard.tsx'
 import { Toaster } from 'sonner'
 import Projetos from './pages/projetos.tsx'
+import Projeto from './pages/projeto.tsx'
 import MinhasTarefas from './pages/minhas-tarefas.tsx'
 import Tarefas from './pages/tarefas.tsx'
 import Tarefa from './pages/tarefa.tsx'
@@ -65,6 +66,12 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/projetos" element={
               <ProtectedRoute>
                 <Projetos />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/projetos/:id" element={
+              <ProtectedRoute>
+                <Projeto />
               </ProtectedRoute>
             } />
 

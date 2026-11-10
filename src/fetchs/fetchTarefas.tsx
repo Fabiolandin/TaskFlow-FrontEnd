@@ -170,3 +170,11 @@ export const updateTarefa = async (id: number, dados: DadosEdicaoTarefa) => {
         body: JSON.stringify(dados),
     });
 }
+
+//busca rápida (RF-58): tarefas cujo nome contém o texto, até `limit`
+export const buscarTarefas = async (busca: string, limit: number = 5) => {
+    const params = new URLSearchParams({ busca, limit: String(limit) });
+    return apiClient<PaginaTarefas>(`/tarefas?${params.toString()}`, {
+        method: "GET",
+    });
+}

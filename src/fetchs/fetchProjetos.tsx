@@ -5,7 +5,7 @@ import type { Membro } from "@/fetchs/fetchMembros";
 //limite padrão da API (RF-12), que combina com o grid de 3 colunas (SPEC-005, D-3)
 export const LIMITE_PROJETOS = 9;
 
-//projeto como o GET /projetos devolve: status é o objeto do cadastro e membros são usuários
+//projeto como as 4 rotas devolvem (RF-51): status é o objeto do cadastro, membros são usuários, e o progresso
 export interface Projeto {
     id: number;
     nome: string;
@@ -15,6 +15,8 @@ export interface Projeto {
     data_final: string | null;
     status: Status;
     membros: Membro[];
+    //calculado no servidor: concluída = status isFinal (RF-49)
+    progresso: { total: number; concluidas: number };
 }
 
 export interface PaginaProjetos {
@@ -62,10 +64,42 @@ export const fetchProjeto = async (id: number) => {
     });
 }
 
-//o retorno do POST tem o formato do GET /projetos/:id (com status e membros)
+//o retorno do POST tem o formato do GET /projetos/:id (RF-51)
 export const createProjeto = async (dados: DadosProjeto) => {
     return apiClient<Projeto>(`/projetos`, {
         method: "POST",
         body: JSON.stringify(dados),
+    });
+}
+
+//corpo do PATCH /projetos/:id: só o campo que mudou (RF-48); null limpa o valor gravado
+export interface DadosEdicaoProjeto {
+    nome?: string;
+    descricao?: string | null;
+    idStatus?: number;
+    data_inicio?: string | null;
+    data_final?: string | null;
+}
+
+//a resposta tem o formato único (RF-51): a página troca o seu estado por ela
+export const updateProjeto = async (id: number, dados: DadosEdicaoProjeto) => {
+    return apiClient<Projeto>(`/projetos/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(dados),
+    });
+}
+
+//com tarefas a API recusa com 409 "Projeto em uso: …" (RF-50); quem chama mostra a mensagem
+export const deleteProjeto = async (id: number) => {
+    return apiClient<unknown>(`/projetos/${id}`, {
+        method: "DELETE",
+    });
+}
+
+//busca rápida (RF-58): projetos cujo nome contém o texto, até `limit`
+export const buscarProjetos = async (busca: string, limit: number = 5) => {
+    const params = new URLSearchParams({ busca, limit: String(limit) });
+    return apiClient<PaginaProjetos>(`/projetos?${params.toString()}`, {
+        method: "GET",
     });
 }

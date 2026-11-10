@@ -6,9 +6,9 @@ import Layout from "@/components/Layout";
 import StatusIcon from "@/components/StatusIcon";
 import PrioridadeIcon from "@/components/PrioridadeIcon";
 import ComentariosDaTarefa from "@/components/ComentariosDaTarefa";
+import DescricaoMarkdown from "@/components/DescricaoMarkdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ApiError, comMotivo } from "@/api/apiClient";
@@ -16,6 +16,7 @@ import { AVISO_PRAZO, dataParaInput, fetchTarefa, PRIORIDADES, prazoAntesDoInici
 import { fetchProjeto, fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, ordenarStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
+import { fetchAtividades, type Atividade } from "@/fetchs/fetchAtividades";
 import type { Membro } from "@/fetchs/fetchMembros";
 import type { Label } from "@/pages/labels";
 import { copiarTexto, linkDaTarefa } from "@/utils/copiarLink";
@@ -61,12 +62,21 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
 
     //rascunhos: null = mostra o valor gravado; um texto = o usuário está mexendo e ainda não saiu do campo
     const [titulo, setTitulo] = useState<string | null>(null);
-    const [descricao, setDescricao] = useState<string | null>(null);
     const [inicio, setInicio] = useState<string | null>(null);
     const [prazo, setPrazo] = useState<string | null>(null);
     const [labelsAberto, setLabelsAberto] = useState(false);
     const [labelsMarcadas, setLabelsMarcadas] = useState<number[] | null>(null);
     const [copiado, setCopiado] = useState(false);
+    //histórico intercalado com os comentários (RF-55); relido depois de cada gravação
+    const [atividades, setAtividades] = useState<Atividade[] | null>(null);
+
+    const lerAtividades = async (idTarefa: number) => {
+        try {
+            setAtividades(await fetchAtividades(idTarefa));
+        } catch (error) {
+            toast.error(comMotivo("Erro ao buscar o histórico da tarefa", error));
+        }
+    }
 
     useEffect(() => {
         if (id === null) return;
@@ -86,6 +96,9 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                 setProjetos(paginaProjetos.data);
             })
             .catch((error) => toast.error(comMotivo("Erro ao buscar status, labels e projetos", error)));
+        fetchAtividades(id)
+            .then((lista) => { if (ativo) setAtividades(lista) })
+            .catch((error) => { if (ativo) toast.error(comMotivo("Erro ao buscar o histórico da tarefa", error)) });
         return () => { ativo = false };
     }, [id]);
 
@@ -114,11 +127,13 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
     const gravar = async (dados: DadosEdicaoTarefa) => {
         try {
             setTarefa(await updateTarefa(tarefa.id, dados));
-            return true;
         } catch (error) {
             toast.error(comMotivo("Não foi possível salvar a alteração", error));
             return false;
         }
+        //a gravação gerou atividade (RF-53): a lista relê; a falha nessa leitura só avisa
+        await lerAtividades(tarefa.id);
+        return true;
     }
 
     const sairDoTitulo = async () => {
@@ -128,14 +143,6 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
         if (!novo || novo === tarefa.nome) { setTitulo(null); return; }
         await gravar({ nome: novo });
         setTitulo(null);
-    }
-
-    const sairDaDescricao = async () => {
-        if (descricao === null) return;
-        const novo = descricao.trim() ? descricao.trim() : null;
-        if (descricao === (tarefa.descricao ?? "") || novo === tarefa.descricao) { setDescricao(null); return; }
-        await gravar({ descricao: novo });
-        setDescricao(null);
     }
 
     //datas pelo dia (AAAA-MM-DD); prazo antes do início não vai (L-1)
@@ -215,7 +222,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
             <div className="mx-auto max-w-[1180px]">
                 <header className="mb-6 flex h-9 items-center gap-3">
                     <nav aria-label="Trilha" className="flex min-w-0 items-center gap-1.5 text-[13px]">
-                        <Link to={`/tarefas?idProjeto=${tarefa.idProjeto}`} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{tarefa.projeto.nome}</Link>
+                        <Link to={`/projetos/${tarefa.idProjeto}`} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{tarefa.projeto.nome}</Link>
                         <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
                         <span className="truncate text-[#C9C5BE]">{tarefa.nome}</span>
                     </nav>
@@ -235,15 +242,8 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                             onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
                             className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-[#E7E4DF] hover:bg-[#121518] focus-visible:bg-[#121518] focus-visible:ring-0"
                         />
-                        <Textarea
-                            aria-label="Descrição"
-                            placeholder="Adicione uma descrição…"
-                            value={descricao ?? tarefa.descricao ?? ""}
-                            onChange={(e) => setDescricao(e.target.value)}
-                            onBlur={sairDaDescricao}
-                            className="-mx-2 min-h-28 border-transparent bg-transparent px-2 text-[13px] leading-[1.6] text-[#B8B4AD] placeholder:text-[#5E6369] hover:bg-[#121518] focus-visible:bg-[#121518] focus-visible:ring-0"
-                        />
-                        <ComentariosDaTarefa idTarefa={tarefa.id} />
+                        <DescricaoMarkdown valor={tarefa.descricao} onGravar={(descricao) => gravar({ descricao })} />
+                        <ComentariosDaTarefa idTarefa={tarefa.id} atividades={atividades} />
                     </div>
 
                     <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-3">
