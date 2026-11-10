@@ -1,15 +1,15 @@
-import DialogDetailsTarefa from "@/components/DialogDetailsTarefa";
 import Layout from "@/components/Layout";
 import ListaTarefas from "@/components/ListaTarefas";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { comMotivo } from "@/api/apiClient";
 import { useAuth } from "@/context/AuthContext";
 import { fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
-import { fetchTarefas, updateTarefa, type DadosEdicaoTarefa, type FiltrosTarefa, type PaginaTarefas, type Tarefa } from "@/fetchs/fetchTarefas";
+import { consultaParaUrl, fetchTarefas, lerConsultaDaUrl, updateTarefa, type DadosEdicaoTarefa, type FiltrosTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
 import type { Label } from "@/pages/labels";
 
 const PAGINA_VAZIA: PaginaTarefas = { data: [], total: 0, page: 1, totalPages: 0 };
@@ -17,15 +17,19 @@ const TODOS = "todos";
 const estiloFiltro = "w-44 h-9! rounded-md bg-[#151A1E] border-[#333B44] text-white";
 const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
 
-//filtros que o usuário mexe aqui; o `idUsuarioEnvolvido` é fixo e vem do token
+//filtros que o usuário mexe aqui, e que vão na URL; o `idUsuarioEnvolvido` é fixo e vem do token
 type FiltroLivre = "idProjeto" | "idStatus" | "idLabel";
+const CHAVES: FiltroLivre[] = ["idProjeto", "idStatus", "idLabel"];
 
-//tarefas em que o usuário logado é responsável ou criador (SPEC-007, RF-38)
+//tarefas em que o usuário logado é responsável ou criador (SPEC-007, RF-38); só tabela, sem criar
 const MinhasTarefas = () => {
     const { usuario } = useAuth();
     const idLogado = usuario?.id;
 
-    const [consulta, setConsulta] = useState<{ pagina: number; filtros: Pick<FiltrosTarefa, FiltroLivre> }>({ pagina: 1, filtros: {} });
+    //página e filtros na URL (RF-44)
+    const [params, setParams] = useSearchParams();
+    const chaveDaUrl = params.toString();
+    const consulta = useMemo(() => lerConsultaDaUrl(new URLSearchParams(chaveDaUrl), CHAVES), [chaveDaUrl]);
     const [resposta, setResposta] = useState<PaginaTarefas>(PAGINA_VAZIA);
     const pagina = resposta.page;
     const totalPaginas = Math.max(resposta.totalPages, 1);
@@ -33,10 +37,6 @@ const MinhasTarefas = () => {
     const [projetos, setProjetos] = useState<Projeto[]>([]);
     const [statusOptions, setStatusOptions] = useState<Status[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
-
-    const [openDetalhe, setOpenDetalhe] = useState(false);
-    const [aberturaDetalhe, setAberturaDetalhe] = useState(0);
-    const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
     const [recarga, setRecarga] = useState(0);
 
     useEffect(() => {
@@ -55,37 +55,31 @@ const MinhasTarefas = () => {
     useEffect(() => {
         if (idLogado === undefined) return;
         let ativo = true;
-        fetchTarefas(consulta.pagina, { ...consulta.filtros, idUsuarioEnvolvido: idLogado })
+        const { pagina: p, filtros } = lerConsultaDaUrl(new URLSearchParams(chaveDaUrl), CHAVES);
+        fetchTarefas(p, { ...filtros, idUsuarioEnvolvido: idLogado })
             .then((nova) => { if (ativo) setResposta(nova) })
             .catch((error) => toast.error(comMotivo("Erro ao buscar tarefas", error)));
         return () => { ativo = false };
-    }, [consulta, recarga, idLogado]);
+    }, [chaveDaUrl, recarga, idLogado]);
+
+    const irPara = (novaPagina: number, filtros: FiltrosTarefa) => setParams(consultaParaUrl(novaPagina, filtros), { replace: true });
 
     const mudarFiltro = (chave: FiltroLivre, valor: string) => {
-        setConsulta((atual) => {
-            const filtros = { ...atual.filtros };
-            if (valor === TODOS) delete filtros[chave];
-            else filtros[chave] = Number(valor);
-            return { pagina: 1, filtros };
-        });
+        const filtros = { ...consulta.filtros };
+        if (valor === TODOS) delete filtros[chave];
+        else filtros[chave] = Number(valor);
+        irPara(1, filtros);
     }
 
-    const editarTarefa = async (id: number, dados: DadosEdicaoTarefa) => {
+    //troca de status/prioridade na linha (RF-44): um campo por PATCH, a lista relê; sucesso sem aviso
+    const trocarCampo = async (id: number, dados: DadosEdicaoTarefa) => {
         try {
             await updateTarefa(id, dados);
         } catch (error) {
-            toast.error(comMotivo("Erro ao editar tarefa", error));
-            return false;
+            toast.error(comMotivo("Erro ao atualizar tarefa", error));
+            return;
         }
-        toast.success("Tarefa editada com sucesso!");
         setRecarga((n) => n + 1);
-        return true;
-    }
-
-    const abrirDetalhe = (tarefa: Tarefa) => {
-        setTarefaSelecionada(tarefa);
-        setAberturaDetalhe((n) => n + 1);
-        setOpenDetalhe(true);
     }
 
     const filtro = (rotulo: string, chave: FiltroLivre, opcoes: { id: number; nome: string }[]) => (
@@ -121,12 +115,11 @@ const MinhasTarefas = () => {
                 tarefas={resposta.data}
                 pagina={pagina}
                 totalPaginas={totalPaginas}
-                onPagina={(p) => setConsulta((c) => ({ ...c, pagina: p }))}
-                onAbrir={abrirDetalhe}
+                onPagina={(p) => irPara(p, consulta.filtros)}
+                statusOptions={statusOptions}
+                onTrocar={trocarCampo}
                 vazio="Você não tem tarefas como responsável ou criador"
             />
-
-            <DialogDetailsTarefa key={`detalhe-${aberturaDetalhe}`} open={openDetalhe} onOpenChange={setOpenDetalhe} tarefaSelecionada={tarefaSelecionada} onEditTarefa={editarTarefa} projetos={projetos} statusOptions={statusOptions} labels={labels} />
         </Layout>
     );
 };

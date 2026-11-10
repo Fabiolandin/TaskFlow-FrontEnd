@@ -25,7 +25,14 @@ export const corValida = (cor: string) => {
     return valor === "" || /^#[0-9A-Fa-f]{6}$/.test(valor);
 }
 
-const rotaDoTipo = (tipo: TipoStatus) => (tipo === "projeto" ? "/statusprojeto" : "/statustarefa");
+//cor de reserva de status sem cor (a mesma do Dashboard, RF-40/RF-43)
+export const COR_RESERVA = "#6E7379";
+
+//ordem do cadastro no front: `ordem` crescente, empate por `id` (a API não desempata; RF-43, D-10)
+export const ordenarStatus = <T extends { id: number; ordem: number }>(lista: T[]): T[] =>
+    [...lista].sort((a, b) => a.ordem - b.ordem || a.id - b.id);
+
+const rotaDoTipo =(tipo: TipoStatus) => (tipo === "projeto" ? "/statusprojeto" : "/statustarefa");
 
 //a API já devolve ordenado por `ordem`
 export const fetchStatus = async (tipo: TipoStatus) => {

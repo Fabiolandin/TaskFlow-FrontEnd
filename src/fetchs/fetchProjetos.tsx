@@ -55,6 +55,13 @@ export const fetchProjetos = async (page: number, limit: number = LIMITE_PROJETO
     });
 }
 
+//um projeto, com status e membros (a página da tarefa lê daqui os membros: RF-26, SPEC-015 C-5)
+export const fetchProjeto = async (id: number) => {
+    return apiClient<Projeto>(`/projetos/${id}`, {
+        method: "GET",
+    });
+}
+
 //o retorno do POST tem o formato do GET /projetos/:id (com status e membros)
 export const createProjeto = async (dados: DadosProjeto) => {
     return apiClient<Projeto>(`/projetos`, {

@@ -15,7 +15,7 @@ import '@fontsource/ibm-plex-mono/500.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Login from './pages/login.tsx'
 import Dashboard from './pages/dashboard.tsx'
@@ -23,6 +23,7 @@ import { Toaster } from 'sonner'
 import Projetos from './pages/projetos.tsx'
 import MinhasTarefas from './pages/minhas-tarefas.tsx'
 import Tarefas from './pages/tarefas.tsx'
+import Tarefa from './pages/tarefa.tsx'
 import Labels from './pages/labels.tsx'
 import Usuarios from './pages/usuarios.tsx'
 import Status from './pages/status.tsx'
@@ -55,6 +56,12 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             } />
 
+            <Route path="/tarefas/:id" element={
+              <ProtectedRoute>
+                <Tarefa />
+              </ProtectedRoute>
+            } />
+
             <Route path="/projetos" element={
               <ProtectedRoute>
                 <Projetos />
@@ -73,11 +80,20 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             } />
 
-            <Route path="/status" element={
+            {/* cadastro de status: uma rota por tipo; o tipo vem da rota (RF-42) */}
+            <Route path="/status/tarefa" element={
               <ProtectedRoute>
-                <Status />
+                <Status key="tarefa" tipo="tarefa" />
               </ProtectedRoute>
             } />
+
+            <Route path="/status/projeto" element={
+              <ProtectedRoute>
+                <Status key="projeto" tipo="projeto" />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/status/*" element={<Navigate to="/status/tarefa" replace />} />
 
           </Route>
         </Routes>

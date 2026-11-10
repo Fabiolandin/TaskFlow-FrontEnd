@@ -69,21 +69,34 @@ export const CAMPOS_VAZIOS: CamposTarefa = {
     idProjeto: "", idUsuarioResponsavel: "", labelIds: [],
 };
 
+//filtros e página na query string (RF-44): só inteiro positivo vale; o resto é ignorado, sem erro
+const inteiroPositivo = (valor: string | null) => (valor && /^[1-9]\d*$/.test(valor) ? Number(valor) : undefined);
+
+export const lerConsultaDaUrl = (params: URLSearchParams, chaves: readonly (keyof FiltrosTarefa)[]) => {
+    const filtros: FiltrosTarefa = {};
+    for (const chave of chaves) {
+        const valor = inteiroPositivo(params.get(chave));
+        if (valor !== undefined) filtros[chave] = valor;
+    }
+    return { pagina: inteiroPositivo(params.get("page")) ?? 1, filtros };
+}
+
+//a página 1 não vai na URL
+export const consultaParaUrl = (pagina: number, filtros: FiltrosTarefa) => {
+    const params = new URLSearchParams();
+    for (const [chave, valor] of Object.entries(filtros)) {
+        if (valor !== undefined) params.set(chave, String(valor));
+    }
+    if (pagina > 1) params.set("page", String(pagina));
+    return params;
+}
+
 //a API devolve a data como ISO (meia-noite UTC); o input type=date quer AAAA-MM-DD
 export const dataParaInput = (iso: string | null) => (iso ? iso.slice(0, 10) : "");
 
-//campos do formulário de edição, a partir da tarefa (descricao incluída, para o PATCH não apagá-la)
-export const camposDaTarefa = (t: Tarefa): CamposTarefa => ({
-    nome: t.nome,
-    descricao: t.descricao ?? "",
-    idStatus: String(t.idStatus),
-    prioridade: t.prioridade,
-    dataInicio: dataParaInput(t.data_inicio),
-    dataFinal: dataParaInput(t.data_final),
-    idProjeto: String(t.idProjeto),
-    idUsuarioResponsavel: t.idUsuarioResponsavel === null ? "" : String(t.idUsuarioResponsavel),
-    labelIds: t.labels.map((l) => l.id),
-});
+//prazo anterior à data de início não é gravado pela tela; o back aceita (RF-13, L-1). Datas AAAA-MM-DD
+export const AVISO_PRAZO = "O prazo não pode ser anterior à data de início";
+export const prazoAntesDoInicio = (inicio: string, prazo: string) => !!inicio && !!prazo && prazo < inicio;
 
 //corpo do POST: opcionais em branco não vão; datas AAAA-MM-DD; nunca idUsuarioCriador (RF-08)
 export interface DadosNovaTarefa {
@@ -113,29 +126,19 @@ export const montarDadosNovaTarefa = (c: CamposTarefa): DadosNovaTarefa => {
     return dados;
 }
 
-//corpo do PATCH: sem idProjeto (fixo na edição) e sem idUsuarioCriador (RF-08);
-//campo esvaziado vai como null para limpar o valor gravado; labelIds substitui todas (RF-14)
+//corpo do PATCH: só o campo que mudou (RF-44, RF-47); nunca idUsuarioCriador (RF-08);
+//null limpa o valor gravado; labelIds substitui todas (RF-14)
 export interface DadosEdicaoTarefa {
-    nome: string;
-    descricao: string;
-    idStatus: number;
-    prioridade: string;
-    data_inicio: string | null;
-    data_final: string | null;
-    idUsuarioResponsavel: number | null;
-    labelIds: number[];
+    nome?: string;
+    descricao?: string | null;
+    idStatus?: number;
+    prioridade?: string;
+    data_inicio?: string | null;
+    data_final?: string | null;
+    idUsuarioResponsavel?: number | null;
+    idProjeto?: number;
+    labelIds?: number[];
 }
-
-export const montarDadosEdicaoTarefa = (c: CamposTarefa): DadosEdicaoTarefa => ({
-    nome: c.nome.trim(),
-    descricao: c.descricao,
-    idStatus: Number(c.idStatus),
-    prioridade: c.prioridade,
-    data_inicio: c.dataInicio || null,
-    data_final: c.dataFinal || null,
-    idUsuarioResponsavel: c.idUsuarioResponsavel ? Number(c.idUsuarioResponsavel) : null,
-    labelIds: c.labelIds,
-});
 
 export const fetchTarefas = async (page: number, filtros: FiltrosTarefa = {}, limit: number = LIMITE_TAREFAS) => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -143,6 +146,13 @@ export const fetchTarefas = async (page: number, filtros: FiltrosTarefa = {}, li
         if (valor !== undefined) params.set(chave, String(valor));
     }
     return apiClient<PaginaTarefas>(`/tarefas?${params.toString()}`, {
+        method: "GET",
+    });
+}
+
+//uma tarefa, no mesmo formato da lista (RF-32); a página da tarefa lê daqui (RF-46)
+export const fetchTarefa = async (id: number) => {
+    return apiClient<Tarefa>(`/tarefas/${id}`, {
         method: "GET",
     });
 }

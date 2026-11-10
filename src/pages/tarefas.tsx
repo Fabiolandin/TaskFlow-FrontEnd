@@ -1,17 +1,19 @@
 import DialogNewTarefa from "@/components/DialogNewTarefa";
-import DialogDetailsTarefa from "@/components/DialogDetailsTarefa";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ListaTarefas from "@/components/ListaTarefas";
-import { useEffect, useState } from "react";
+import ListaAgrupada from "@/components/ListaAgrupada";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { LayoutList, Table2 } from "lucide-react";
 import { ApiError } from "@/api/apiClient";
 import { fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
 import { fetchUsuarios } from "@/fetchs/fetchUsuarios";
-import { createTarefa, fetchTarefas, updateTarefa, type DadosEdicaoTarefa, type DadosNovaTarefa, type FiltrosTarefa, type PaginaTarefas, type Tarefa } from "@/fetchs/fetchTarefas";
+import { consultaParaUrl, createTarefa, fetchTarefas, lerConsultaDaUrl, updateTarefa, type DadosEdicaoTarefa, type DadosNovaTarefa, type FiltrosTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
 import type { Label } from "@/pages/labels";
 import type { Usuario } from "@/pages/usuarios";
 
@@ -19,6 +21,19 @@ const PAGINA_VAZIA: PaginaTarefas = { data: [], total: 0, page: 1, totalPages: 0
 const TODOS = "todos";
 const estiloFiltro = "w-44 h-9! rounded-md bg-[#151A1E] border-[#333B44] text-white";
 const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
+//filtros que vão na URL desta tela (RF-44)
+const CHAVES: (keyof FiltrosTarefa)[] = ["idProjeto", "idStatus", "idUsuarioResponsavel", "idLabel"];
+
+//exibição agrupada ou tabela, salva no navegador; sem escolha ou sem localStorage, tabela (RF-45)
+type Exibicao = "tabela" | "agrupado";
+const CHAVE_EXIBICAO = "taskflow:tarefas:exibicao";
+const lerExibicao = (): Exibicao => {
+    try {
+        return localStorage.getItem(CHAVE_EXIBICAO) === "agrupado" ? "agrupado" : "tabela";
+    } catch {
+        return "tabela";
+    }
+}
 
 //mensagem da API quando ela manda texto; senão, só o texto fixo
 const comMotivo = (texto: string, error: unknown) => {
@@ -28,11 +43,14 @@ const comMotivo = (texto: string, error: unknown) => {
 
 const Tarefas = () => {
 
-    //página atual e filtros juntos: mudar filtro volta à página 1 numa só consulta
-    const [consulta, setConsulta] = useState<{ pagina: number; filtros: FiltrosTarefa }>({ pagina: 1, filtros: {} });
+    //página e filtros vivem na URL: abrir uma tarefa e voltar restaura a lista (RF-44, D-8)
+    const [params, setParams] = useSearchParams();
+    const chaveDaUrl = params.toString();
+    const consulta = useMemo(() => lerConsultaDaUrl(new URLSearchParams(chaveDaUrl), CHAVES), [chaveDaUrl]);
     const [resposta, setResposta] = useState<PaginaTarefas>(PAGINA_VAZIA);
     const pagina = resposta.page;
     const totalPaginas = Math.max(resposta.totalPages, 1);
+    const [exibicao, setExibicao] = useState<Exibicao>(lerExibicao);
 
     //opções dos filtros e dos dialogs, carregadas uma vez do cadastro
     const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -40,14 +58,11 @@ const Tarefas = () => {
     const [labels, setLabels] = useState<Label[]>([]);
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
 
-    //dialogs: a `key` nova a cada abertura faz o formulário nascer do zero (criar) ou da tarefa (editar)
+    //dialog de criar: a `key` nova a cada abertura faz o formulário nascer do zero
     const [openNova, setOpenNova] = useState(false);
     const [aberturaNova, setAberturaNova] = useState(0);
-    const [openDetalhe, setOpenDetalhe] = useState(false);
-    const [aberturaDetalhe, setAberturaDetalhe] = useState(0);
-    const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
 
-    //recarrega a mesma consulta (depois de editar)
+    //relê a mesma consulta (depois de uma troca na linha ou de criar)
     const [recarga, setRecarga] = useState(0);
 
     useEffect(() => {
@@ -64,21 +79,44 @@ const Tarefas = () => {
         return () => { ativo = false };
     }, []);
 
+    //no modo agrupado quem lê é a ListaAgrupada, um pedido por status (nenhum pedido sem idStatus)
     useEffect(() => {
+        if (exibicao !== "tabela") return;
         let ativo = true;
-        fetchTarefas(consulta.pagina, consulta.filtros)
+        const { pagina: p, filtros } = lerConsultaDaUrl(new URLSearchParams(chaveDaUrl), CHAVES);
+        fetchTarefas(p, filtros)
             .then((nova) => { if (ativo) setResposta(nova) })
             .catch((error) => toast.error(comMotivo("Erro ao buscar tarefas", error)));
         return () => { ativo = false };
-    }, [consulta, recarga]);
+    }, [chaveDaUrl, recarga, exibicao]);
+
+    const irPara = (novaPagina: number, filtros: FiltrosTarefa) => setParams(consultaParaUrl(novaPagina, filtros), { replace: true });
 
     const mudarFiltro = (chave: keyof FiltrosTarefa, valor: string) => {
-        setConsulta((atual) => {
-            const filtros = { ...atual.filtros };
-            if (valor === TODOS) delete filtros[chave];
-            else filtros[chave] = Number(valor);
-            return { pagina: 1, filtros };
-        });
+        const filtros = { ...consulta.filtros };
+        if (valor === TODOS) delete filtros[chave];
+        else filtros[chave] = Number(valor);
+        irPara(1, filtros);
+    }
+
+    const trocarExibicao = (nova: Exibicao) => {
+        setExibicao(nova);
+        try {
+            localStorage.setItem(CHAVE_EXIBICAO, nova);
+        } catch {
+            //sem localStorage: a escolha vale só até recarregar
+        }
+    }
+
+    //troca de status/prioridade na linha: um campo por PATCH, e a lista relê (RF-44); sucesso sem aviso
+    const trocarCampo = async (id: number, dados: DadosEdicaoTarefa) => {
+        try {
+            await updateTarefa(id, dados);
+        } catch (error) {
+            toast.error(comMotivo("Erro ao atualizar tarefa", error));
+            return;
+        }
+        setRecarga((n) => n + 1);
     }
 
     //a API ordena por id: a tarefa nova é a última, então limpa os filtros e vai para a última página
@@ -90,23 +128,16 @@ const Tarefas = () => {
             return false;
         }
         toast.success("Tarefa criada com sucesso!");
+        if (exibicao === "agrupado") {
+            setRecarga((n) => n + 1);
+            return true;
+        }
         try {
             const primeira = await fetchTarefas(1, {});
-            setConsulta({ pagina: Math.max(primeira.totalPages, 1), filtros: {} });
+            irPara(Math.max(primeira.totalPages, 1), {});
         } catch {
-            setConsulta({ pagina: 1, filtros: {} });
+            irPara(1, {});
         }
-        return true;
-    }
-
-    const editarTarefa = async (id: number, dados: DadosEdicaoTarefa) => {
-        try {
-            await updateTarefa(id, dados);
-        } catch (error) {
-            toast.error(comMotivo("Erro ao editar tarefa", error));
-            return false;
-        }
-        toast.success("Tarefa editada com sucesso!");
         setRecarga((n) => n + 1);
         return true;
     }
@@ -114,12 +145,6 @@ const Tarefas = () => {
     const abrirNova = () => {
         setAberturaNova((n) => n + 1);
         setOpenNova(true);
-    }
-
-    const abrirDetalhe = (tarefa: Tarefa) => {
-        setTarefaSelecionada(tarefa);
-        setAberturaDetalhe((n) => n + 1);
-        setOpenDetalhe(true);
     }
 
     const valorDe = (chave: keyof FiltrosTarefa) => String(consulta.filtros[chave] ?? TODOS);
@@ -140,14 +165,29 @@ const Tarefas = () => {
         </Select>
     );
 
+    const botaoExibicao = (valor: Exibicao, rotulo: string, icone: ReactNode) => (
+        <button
+            type="button"
+            aria-pressed={exibicao === valor}
+            onClick={() => trocarExibicao(valor)}
+            className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[12.5px] font-medium transition-colors ${exibicao === valor ? "bg-[#1B1F23] text-[#E7E4DF]" : "text-[#7C8189] hover:text-[#E7E4DF]"}`}
+        >
+            {icone}{rotulo}
+        </button>
+    );
+
     const opcoesDosDialogs = { projetos, statusOptions, labels };
 
     return (
         <Layout>
-            <div className="flex flex-row">
+            <div className="flex flex-row items-center gap-3">
                 <h1 className="text-2xl font-bold text-white">Tarefas</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2">{resposta.total} no total</p>
-                <Button variant="destructive" className="ml-auto" onClick={abrirNova}>
+                {exibicao === "tabela" && <p className="text-sm text-zinc-400 mt-1">{resposta.total} no total</p>}
+                <div className="ml-auto flex items-center gap-0.5 rounded-md border border-[#1C1F23] bg-[#0E1012] p-0.5">
+                    {botaoExibicao("agrupado", "Agrupado", <LayoutList aria-hidden="true" className="size-3.5" />)}
+                    {botaoExibicao("tabela", "Tabela", <Table2 aria-hidden="true" className="size-3.5" />)}
+                </div>
+                <Button variant="destructive" onClick={abrirNova}>
                     Nova Tarefa
                 </Button>
             </div>
@@ -159,16 +199,20 @@ const Tarefas = () => {
                 {filtro("Label", "idLabel", labels)}
             </div>
 
-            <ListaTarefas
-                tarefas={resposta.data}
-                pagina={pagina}
-                totalPaginas={totalPaginas}
-                onPagina={(p) => setConsulta((c) => ({ ...c, pagina: p }))}
-                onAbrir={abrirDetalhe}
-            />
+            {exibicao === "agrupado" ? (
+                <ListaAgrupada filtros={consulta.filtros} statusOptions={statusOptions} recarga={recarga} onTrocar={trocarCampo} />
+            ) : (
+                <ListaTarefas
+                    tarefas={resposta.data}
+                    pagina={pagina}
+                    totalPaginas={totalPaginas}
+                    onPagina={(p) => irPara(p, consulta.filtros)}
+                    statusOptions={statusOptions}
+                    onTrocar={trocarCampo}
+                />
+            )}
 
             <DialogNewTarefa key={`nova-${aberturaNova}`} open={openNova} onOpenChange={setOpenNova} onCreateTarefa={criarTarefa} {...opcoesDosDialogs} />
-            <DialogDetailsTarefa key={`detalhe-${aberturaDetalhe}`} open={openDetalhe} onOpenChange={setOpenDetalhe} tarefaSelecionada={tarefaSelecionada} onEditTarefa={editarTarefa} {...opcoesDosDialogs} />
         </Layout>
     );
 };

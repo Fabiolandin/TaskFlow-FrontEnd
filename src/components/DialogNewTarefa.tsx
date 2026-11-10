@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import type { Status } from "@/fetchs/fetchStatus";
 import type { Projeto } from "@/fetchs/fetchProjetos";
 import type { Label } from "@/pages/labels";
-import { CAMPOS_VAZIOS, montarDadosNovaTarefa, PRIORIDADES, type CamposTarefa, type DadosNovaTarefa } from "@/fetchs/fetchTarefas";
+import { AVISO_PRAZO, CAMPOS_VAZIOS, montarDadosNovaTarefa, prazoAntesDoInicio, PRIORIDADES, type CamposTarefa, type DadosNovaTarefa } from "@/fetchs/fetchTarefas";
 
 //opções vindas da página (carregadas uma vez do cadastro)
 export interface OpcoesTarefa {
@@ -23,12 +23,10 @@ const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
 interface FormularioTarefaProps extends OpcoesTarefa {
     campos: CamposTarefa;
     onChange: (parcial: Partial<CamposTarefa>) => void;
-    //na edição o projeto aparece, mas não se troca (SPEC-006, D-5)
-    projetoFixo?: boolean;
 }
 
-//campos de tarefa, compartilhados pelo dialog de criar e pelo de detalhe/edição
-export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, labels, projetoFixo }: FormularioTarefaProps) => {
+//campos do dialog de criar tarefa (a edição é na página da tarefa desde a SPEC-015)
+export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, labels }: FormularioTarefaProps) => {
     //responsável só entre os membros do projeto escolhido (RF-26)
     const membros = projetos.find((p) => String(p.id) === campos.idProjeto)?.membros ?? [];
 
@@ -60,24 +58,18 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
             <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-gray-400 text-[13px]">Projeto</p>
-                    {projetoFixo ? (
-                        <p aria-label="Projeto" className="text-white text-sm h-10 flex items-center rounded-md bg-[#151A1E] border border-[#333B44] px-3">
-                            {projetos.find((p) => String(p.id) === campos.idProjeto)?.nome ?? `#${campos.idProjeto}`}
-                        </p>
-                    ) : (
-                        <Select value={campos.idProjeto} onValueChange={(v) => onChange({ idProjeto: v, idUsuarioResponsavel: "" })}>
-                            <SelectTrigger aria-label="Projeto" className={estiloSelect}>
-                                <SelectValue placeholder="Selecione o projeto" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
-                                <SelectGroup>
-                                    {projetos.map((p) => (
-                                        <SelectItem className={estiloItem} key={p.id} value={String(p.id)}>{p.nome}</SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    )}
+                    <Select value={campos.idProjeto} onValueChange={(v) => onChange({ idProjeto: v, idUsuarioResponsavel: "" })}>
+                        <SelectTrigger aria-label="Projeto" className={estiloSelect}>
+                            <SelectValue placeholder="Selecione o projeto" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                            <SelectGroup>
+                                {projetos.map((p) => (
+                                    <SelectItem className={estiloItem} key={p.id} value={String(p.id)}>{p.nome}</SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -158,6 +150,9 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                     />
                 </div>
             </div>
+            {prazoAntesDoInicio(campos.dataInicio, campos.dataFinal) && (
+                <p className="text-red-400 text-[12px]">{AVISO_PRAZO}</p>
+            )}
 
             <p className="text-gray-400 text-[13px]">Labels</p>
             <div className="flex flex-row flex-wrap gap-2">
@@ -193,8 +188,9 @@ const DialogNewTarefa = ({ open, onOpenChange, onCreateTarefa, ...opcoes }: Dial
     const [campos, setCampos] = useState<CamposTarefa>(CAMPOS_VAZIOS);
     const [salvando, setSalvando] = useState(false);
 
-    //nome, projeto, status e prioridade são obrigatórios na API
-    const podeCriar = !!campos.nome.trim() && !!campos.idProjeto && !!campos.idStatus && !!campos.prioridade && !salvando;
+    //nome, projeto, status e prioridade são obrigatórios na API; prazo antes do início não vai (RF-34, L-1)
+    const podeCriar = !!campos.nome.trim() && !!campos.idProjeto && !!campos.idStatus && !!campos.prioridade
+        && !prazoAntesDoInicio(campos.dataInicio, campos.dataFinal) && !salvando;
 
     const handleCreate = async () => {
         if (!podeCriar) return;

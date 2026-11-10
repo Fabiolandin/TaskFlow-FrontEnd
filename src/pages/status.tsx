@@ -11,15 +11,8 @@ import DialogNewStatus from "@/components/DialogNewStatus";
 import DialogDetailsStatus from "@/components/DialogDetailsStatus";
 import { ApiError } from "@/api/apiClient";
 
-const ABAS: { tipo: TipoStatus; rotulo: string }[] = [
-    { tipo: "projeto", rotulo: "Projeto" },
-    { tipo: "tarefa", rotulo: "Tarefa" },
-];
-
-const Status = () => {
-
-    //aba ativa: status de projeto ou de tarefa (SPEC-003b, D-1)
-    const [aba, setAba] = useState<TipoStatus>("projeto")
+//o tipo vem da rota: /status/tarefa ou /status/projeto, sem abas (RF-42, SPEC-015)
+const Status = ({ tipo }: { tipo: TipoStatus }) => {
 
     //states para abrir os dialogs
     const [open, setOpen] = useState(false)
@@ -27,17 +20,16 @@ const Status = () => {
     //muda a cada abertura do dialog de edição, para ele recarregar os campos
     const [aberturaDetalhes, setAberturaDetalhes] = useState(0)
 
-    //listas dos dois cadastros, na ordem que a API devolve (por `ordem`)
-    const [listas, setListas] = useState<Record<TipoStatus, StatusItem[]>>({ projeto: [], tarefa: [] })
+    //lista do cadastro da rota, na ordem que a API devolve (por `ordem`)
+    const [statusDaAba, setStatusDaAba] = useState<StatusItem[]>([])
     const [statusSelecionado, setStatusSelecionado] = useState<StatusItem | null>(null)
 
-    const statusDaAba = listas[aba]
-    const rotuloDaAba = aba === "projeto" ? "de projeto" : "de tarefa"
+    const rotuloDaAba = tipo === "projeto" ? "de projeto" : "de tarefa"
 
-    const getDados = async (tipo: TipoStatus) => {
+    const getDados = async () => {
         try {
             const resposta = await fetchStatus(tipo)
-            setListas((atual) => ({ ...atual, [tipo]: resposta }))
+            setStatusDaAba(resposta)
         } catch {
             toast.error("Erro ao buscar status")
         }
@@ -45,9 +37,9 @@ const Status = () => {
 
     const criarStatus = async (dados: DadosStatus) => {
         try {
-            await createStatus(aba, dados)
+            await createStatus(tipo, dados)
             toast.success("Status criado com sucesso!")
-            await getDados(aba)
+            await getDados()
         } catch (error) {
             toast.error("Erro ao criar status")
             throw error
@@ -56,9 +48,9 @@ const Status = () => {
 
     const editarStatus = async (id: number, dados: DadosStatus) => {
         try {
-            await updateStatus(aba, id, dados)
+            await updateStatus(tipo, id, dados)
             toast.success("Status editado com sucesso")
-            await getDados(aba)
+            await getDados()
         } catch (error) {
             toast.error("Erro ao editar status")
             throw error
@@ -67,9 +59,9 @@ const Status = () => {
 
     const deletStatus = async (id: number) => {
         try {
-            await deleteStatus(aba, id)
+            await deleteStatus(tipo, id)
             toast.success("Status deletado com sucesso")
-            await getDados(aba)
+            await getDados()
         } catch (error) {
             //409 (status em uso): mostra o motivo vindo da API; qualquer outra falha, o texto fixo
             toast.error(error instanceof ApiError && error.status === 409 && error.mensagemDaApi ? error.mensagemDaApi : "Status não foi deletado")
@@ -83,38 +75,25 @@ const Status = () => {
         setOpenDetails(true)
     }
 
-    //carrega os dois cadastros no mount
+    //carrega o cadastro da rota no mount
     useEffect(() => {
         let ativo = true
-        Promise.all([fetchStatus("projeto"), fetchStatus("tarefa")])
-            .then(([projeto, tarefa]) => {
-                if (ativo) setListas({ projeto, tarefa })
+        fetchStatus(tipo)
+            .then((lista) => {
+                if (ativo) setStatusDaAba(lista)
             })
             .catch(() => toast.error("Erro ao buscar status"))
         return () => { ativo = false }
-    }, [])
+    }, [tipo])
 
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Status</h1>
+                <h1 className="text-2xl font-bold text-white">Status {rotuloDaAba}</h1>
                 <p className="text-sm text-zinc-400 mt-2 ml-2"> {statusDaAba.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Novo Status
                 </Button>
-            </div>
-
-            <div className="mt-4 flex flex-row gap-2">
-                {ABAS.map(({ tipo, rotulo }) => (
-                    <Button
-                        key={tipo}
-                        variant="ghost"
-                        className={aba === tipo ? "bg-[#151A1E] text-white" : "text-zinc-400 hover:text-white"}
-                        onClick={() => setAba(tipo)}
-                    >
-                        {rotulo} ({listas[tipo].length})
-                    </Button>
-                ))}
             </div>
 
             <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
