@@ -13,9 +13,13 @@ export const TEMAS: { valor: Tema; rotulo: string }[] = [
 export const CHAVE_TEMA = "taskflow:tema";
 export const EVENTO_TEMA = "taskflow:tema";
 
+//a escolha desta aba: vale quando o localStorage está bloqueado (até recarregar) e é o que o menu mostra
+let escolhaEmMemoria: Tema | null = null;
+
 const midiaClara = () => (typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null);
 
 export const lerTema = (): Tema => {
+    if (escolhaEmMemoria) return escolhaEmMemoria;
     try {
         const salvo = localStorage.getItem(CHAVE_TEMA);
         return salvo === "claro" || salvo === "sistema" ? salvo : "escuro";
@@ -41,14 +45,18 @@ export const iniciarTema = () => {
     midiaClara()?.addEventListener("change", () => { if (lerTema() === "sistema") aplicarTema("sistema"); });
 };
 
+//RF-98: relê a escolha a cada aplicação do tema; o contador re-renderiza também quando a escolha é a mesma
+//("sistema") e o que mudou foi o sistema operacional, para o ícone e os avisos seguirem o tema efetivo
 export const useTema = (): [Tema, (tema: Tema) => void] => {
     const [tema, setTema] = useState<Tema>(lerTema);
+    const [, setAplicacoes] = useState(0);
     useEffect(() => {
-        const reler = () => setTema(lerTema());
+        const reler = () => { setTema(lerTema()); setAplicacoes((n) => n + 1); };
         window.addEventListener(EVENTO_TEMA, reler);
         return () => window.removeEventListener(EVENTO_TEMA, reler);
     }, []);
     const mudar = (novo: Tema) => {
+        escolhaEmMemoria = novo;
         try {
             localStorage.setItem(CHAVE_TEMA, novo);
         } catch {

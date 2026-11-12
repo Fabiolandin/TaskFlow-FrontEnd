@@ -21,6 +21,7 @@ import { fetchLabels } from "@/fetchs/fetchLabel";
 import { fetchAtividades, type Atividade } from "@/fetchs/fetchAtividades";
 import type { Membro } from "@/fetchs/fetchMembros";
 import type { Label } from "@/pages/labels";
+import ChipLabel from "@/components/ChipLabel";
 import { copiarTexto, linkDaTarefa } from "@/utils/copiarLink";
 import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
 import BotaoPainel from "@/components/BotaoPainel";
@@ -360,9 +361,8 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                             <DropdownMenu open={labelsAberto} onOpenChange={abrirLabels}>
                                 <DropdownMenuTrigger asChild>
                                     <button type="button" aria-label="Labels" className="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md px-2 py-1 text-left outline-none hover:bg-elevado focus-visible:bg-elevado data-[state=open]:bg-elevado">
-                                        {labelsNaTela.map((l) => (
-                                            <span key={l.id} data-label className="rounded-md border border-borda-media bg-hover px-1.5 py-0.5 text-[11px] text-texto-suave">{l.nome}</span>
-                                        ))}
+                                        {/* o chip colorido da lista (RF-77, RF-100) */}
+                                        {labelsNaTela.map((l) => <ChipLabel key={l.id} label={l} />)}
                                         {labelsNaTela.length === 0 && (
                                             <span className="flex items-center gap-1 text-[12.5px] text-placeholder"><Plus aria-hidden="true" className="size-3.5" />Adicionar</span>
                                         )}

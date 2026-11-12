@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { ApiError } from "@/api/apiClient";
 
 export interface LoginUser {
     email: string;
@@ -37,7 +38,10 @@ const Login = () => {
             toast.success("Login realizado com sucesso!");
             navigate("/");
         } catch (error) {
-            toast.error("Email ou senha inválidos");
+            //RF-90: muitas tentativas mostra a mensagem da API; credencial errada, o texto de sempre
+            if (error instanceof ApiError && error.status === 429) toast.error(error.mensagemDaApi ?? "Muitas tentativas de login. Tente de novo em 1 minuto.");
+            else if (error instanceof ApiError && error.status === 401) toast.error("Email ou senha inválidos");
+            else toast.error("Não foi possível entrar. Tente de novo.");
         } finally {
             setIsLoading(false);
         }

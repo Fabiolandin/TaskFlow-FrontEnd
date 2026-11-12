@@ -21,10 +21,12 @@ export const deleteUsuario = async(id: number) => {
     });
 }
 
-//senha vazia não vai (mantém a atual); isAdmin só vai quando um admin edita (RF-82)
-export const updateUsuario = async(id: number, nome: string, email: string, senha?: string, isAdmin?: boolean) => {
-    const body: { nome: string; email: string; senha?: string; isAdmin?: boolean } = { nome, email };
+//senha vazia não vai (mantém a atual); isAdmin só vai quando um admin edita (RF-82);
+//senhaAtual só vai quando a pessoa troca a própria senha (RF-93)
+export const updateUsuario = async(id: number, nome: string, email: string, senha?: string, isAdmin?: boolean, senhaAtual?: string) => {
+    const body: { nome: string; email: string; senha?: string; isAdmin?: boolean; senhaAtual?: string } = { nome, email };
     if (senha) body.senha = senha;
+    if (senha && senhaAtual) body.senhaAtual = senhaAtual;
     if (isAdmin !== undefined) body.isAdmin = isAdmin;
     return apiClient(`/usuarios/${id}`, {
         method: "PATCH",

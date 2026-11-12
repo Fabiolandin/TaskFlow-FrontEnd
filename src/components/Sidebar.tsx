@@ -151,7 +151,7 @@ export default function Sidebar() {
             </nav>
 
             {/* rodapé: usuário logado, tema e sair (RF-73, RF-69) */}
-            <div data-rodape-menu className={`mt-3 flex items-center gap-2.5 ${recolhido ? "flex-col" : "rounded-cartao border border-borda bg-hover p-2.5"}`}>
+            <div data-rodape-menu className={`mt-3 flex items-center gap-2.5 ${recolhido ? "flex-col" : "rounded-cartao border border-borda bg-superficie p-2.5"}`}>
                 {eu && <Avatar usuario={eu} tamanho={30} quadrado />}
                 {eu && !recolhido && (
                     <span className="flex min-w-0 flex-col">

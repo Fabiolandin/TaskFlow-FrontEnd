@@ -10,6 +10,8 @@ import { createUsuario, deleteUsuario, fetchUsuarios, updateUsuario } from "@/fe
 import DialogDetailsUsuario from "@/components/DialogDetailsUsuario";
 import { ApiError } from "@/api/apiClient";
 import { esquecerUsuarioLogado, useUsuarioLogado } from "@/utils/usuarioLogado";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export interface Usuario {
     id: number;
@@ -24,7 +26,10 @@ const motivo = (error: unknown, padrao: string) => (error instanceof ApiError &&
 
 const Usuarios = () => {
     //o papel do logado decide o que a tela oferece (RF-86); enquanto não sabe, trata como comum
-    const eu = useUsuarioLogado();
+    //relê ao abrir a tela: o papel pode ter mudado por outro admin (RF-97)
+    const eu = useUsuarioLogado({ relerAoMontar: true });
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const souAdmin = eu?.isAdmin === true;
 
     //state para abrir dialog de criação
@@ -56,9 +61,17 @@ const Usuarios = () => {
         }
     }
 
-    const editarUsuario = async (id: number, nome: string, email: string, senha?: string, isAdmin?: boolean) => {
+    const editarUsuario = async (id: number, nome: string, email: string, senha?: string, isAdmin?: boolean, senhaAtual?: string) => {
         try{
-            await updateUsuario(id, nome, email, senha, isAdmin)
+            await updateUsuario(id, nome, email, senha, isAdmin, senhaAtual)
+            //a própria senha mudou: o token atual caiu (RF-92); a sessão acaba e a pessoa entra de novo (D-9)
+            if (id === eu?.id && senha) {
+                esquecerUsuarioLogado(id)
+                logout()
+                navigate("/login")
+                toast.success("Senha alterada. Entre de novo com a senha nova.")
+                return
+            }
             //a própria conta mudou: o menu relê nome, email e papel
             if (id === eu?.id) esquecerUsuarioLogado(id)
             toast.success("Usuário atualizado com sucesso")
@@ -154,7 +167,7 @@ const Usuarios = () => {
 
 
             <DialogUsuario open={open} onOpenChange={setOpen} onCreateUsuario={criarUsuario} mostrarAdmin={souAdmin} />
-            <DialogDetailsUsuario open={openDetails} onOpenChange={setOpenDetails} usuarioSelecionado={usuarioSelecionado} onEditUsuario={editarUsuario} mostrarAdmin={souAdmin} />
+            <DialogDetailsUsuario open={openDetails} onOpenChange={setOpenDetails} usuarioSelecionado={usuarioSelecionado} onEditUsuario={editarUsuario} mostrarAdmin={souAdmin} propriaConta={usuarioSelecionado?.id === eu?.id} />
         </Layout>
     );
 };

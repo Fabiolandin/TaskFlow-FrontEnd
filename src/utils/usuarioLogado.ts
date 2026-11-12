@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { fetchUsuario } from "@/fetchs/fetchUsuarios";
 import type { Usuario } from "@/pages/usuarios";
@@ -14,8 +14,10 @@ export const esquecerUsuarioLogado = (id: number) => {
     window.dispatchEvent(new Event(EVENTO));
 };
 
-//null enquanto carrega ou se a leitura falhou (o menu mostra só o Sair; a tela de Usuários trata como comum)
-export const useUsuarioLogado = (): Usuario | null => {
+//null enquanto carrega ou se a leitura falhou (o menu mostra só o Sair; a tela de Usuários trata como comum).
+//Relê quando a janela volta ao foco e, com relerAoMontar, ao montar: o papel pode ter mudado por outro admin (RF-97).
+//Durante a releitura, devolve o valor anterior (sem piscar)
+export const useUsuarioLogado = ({ relerAoMontar = false }: { relerAoMontar?: boolean } = {}): Usuario | null => {
     const { usuario } = useAuth();
     const id = usuario?.id;
     //lido: o que a última leitura trouxe; o cache vale primeiro (outra tela já leu)
@@ -24,12 +26,18 @@ export const useUsuarioLogado = (): Usuario | null => {
 
     useEffect(() => {
         const reler = () => setVersao((v) => v + 1);
+        const aoFocar = () => { if (id) cache.delete(id); reler(); };
         window.addEventListener(EVENTO, reler);
-        return () => window.removeEventListener(EVENTO, reler);
-    }, []);
+        window.addEventListener("focus", aoFocar);
+        return () => { window.removeEventListener(EVENTO, reler); window.removeEventListener("focus", aoFocar); };
+    }, [id]);
 
+    //na primeira execução, com relerAoMontar, ignora o cache e busca de novo
+    const primeira = useRef(relerAoMontar);
     useEffect(() => {
-        if (!id || cache.has(id)) return;
+        const forcar = primeira.current;
+        primeira.current = false;
+        if (!id || (cache.has(id) && !forcar)) return;
         let ativo = true;
         fetchUsuario(id)
             .then((u) => { cache.set(id, u); if (ativo) setLido(u); })

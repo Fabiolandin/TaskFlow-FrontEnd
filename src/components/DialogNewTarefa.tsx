@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import type { Status } from "@/fetchs/fetchStatus";
 import type { Projeto } from "@/fetchs/fetchProjetos";
 import type { Label } from "@/pages/labels";
+import ChipLabel from "./ChipLabel";
+import { Check } from "lucide-react";
 import { AVISO_PRAZO, CAMPOS_VAZIOS, montarDadosNovaTarefa, prazoAntesDoInicio, PRIORIDADES, type CamposTarefa, type DadosNovaTarefa } from "@/fetchs/fetchTarefas";
 
 //opções vindas da página (carregadas uma vez do cadastro)
@@ -162,14 +164,16 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 {labels.map((label) => {
                     const selecionada = campos.labelIds.includes(label.id);
                     return (
+                        //o chip colorido da lista (RF-100); desmarcada fica apagada, marcada ganha o ✓
                         <button
                             key={label.id}
                             type="button"
                             aria-pressed={selecionada}
                             onClick={() => alternarLabel(label.id)}
-                            className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer ${selecionada ? "bg-borda-forte border-texto/40 text-texto" : "bg-elevado border-borda-forte text-texto-suave"}`}
+                            className={`inline-flex cursor-pointer items-center gap-1 rounded-chip transition-opacity ${selecionada ? "opacity-100" : "opacity-45 hover:opacity-80"}`}
                         >
-                            {label.nome}
+                            {selecionada && <Check aria-hidden="true" className="size-3 text-texto" />}
+                            <ChipLabel label={label} />
                         </button>
                     );
                 })}
