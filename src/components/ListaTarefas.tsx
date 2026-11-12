@@ -29,16 +29,15 @@ const ListaTarefas = ({ tarefas, pagina, totalPaginas, onPagina, statusOptions, 
                                 <TableHead className={estiloCabecalho}>Nome</TableHead>
                                 <TableHead className={estiloCabecalho}>Status</TableHead>
                                 <TableHead className={estiloCabecalho}>Prioridade</TableHead>
-                                <TableHead className={estiloCabecalho}>Prazo</TableHead>
                                 <TableHead className={estiloCabecalho}>Responsável</TableHead>
                                 <TableHead className={estiloCabecalho}>Projeto</TableHead>
-                                <TableHead className={estiloCabecalho}>Labels</TableHead>
+                                <TableHead className={estiloCabecalho}>Prazo</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {tarefas.length === 0 && (
                                 <TableRow className="border-[#14171A] hover:bg-transparent">
-                                    <TableCell colSpan={7} className="text-center text-zinc-500">{vazio}</TableCell>
+                                    <TableCell colSpan={6} className="text-center text-zinc-500">{vazio}</TableCell>
                                 </TableRow>
                             )}
                             {tarefas.map((tarefa) => (

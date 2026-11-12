@@ -22,9 +22,20 @@ const LinhaTarefa = ({ tarefa, statusOptions, onTrocar }: LinhaTarefaProps) => {
     return (
         <TableRow data-tarefa-id={tarefa.id} onClick={abrir} className="h-10 cursor-pointer border-[#14171A] hover:bg-[#131619]">
             <TableCell className="max-w-0 w-[32%] py-1.5">
-                <Link to={`/tarefas/${tarefa.id}`} onClick={naoPropaga} className="block truncate rounded-sm text-[13.5px] font-medium text-[#E7E4DF] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[#3A3F45]">
-                    {tarefa.nome}
-                </Link>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    {/* sub-tarefa: o nome da pai antes, mais discreto (RF-67) */}
+                    {tarefa.tarefaPai && (
+                        <span data-tarefa-pai className="max-w-[40%] shrink-0 truncate text-[12px] text-[#61666C]">{tarefa.tarefaPai.nome} ›</span>
+                    )}
+                    <Link to={`/tarefas/${tarefa.id}`} onClick={naoPropaga} className="min-w-0 truncate rounded-sm text-[13.5px] font-medium text-[#E7E4DF] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[#3A3F45]">
+                        {tarefa.nome}
+                    </Link>
+                    {tarefa.subtarefas.total > 0 && (
+                        <span data-subtarefas title="Sub-tarefas concluídas" className="shrink-0 rounded border border-[#24272B] px-1 font-mono text-[10.5px] text-[#8A9098]">
+                            {tarefa.subtarefas.concluidas}/{tarefa.subtarefas.total}
+                        </span>
+                    )}
+                </div>
             </TableCell>
             <TableCell className="py-1.5">
                 <MenuStatus status={tarefa.status} statusOptions={statusOptions} onEscolher={(idStatus) => onTrocar(tarefa.id, { idStatus })} />
@@ -32,7 +43,6 @@ const LinhaTarefa = ({ tarefa, statusOptions, onTrocar }: LinhaTarefaProps) => {
             <TableCell className="py-1.5">
                 <MenuPrioridade prioridade={tarefa.prioridade} onEscolher={(prioridade) => onTrocar(tarefa.id, { prioridade })} />
             </TableCell>
-            <TableCell className="py-1.5 font-mono text-[12px] text-[#7C8189]">{formatarDia(tarefa.data_final)}</TableCell>
             <TableCell className="py-1.5 text-[13px] text-[#A9AEB4]">
                 <span className="flex items-center gap-2">
                     {tarefa.responsavel && (
@@ -44,13 +54,7 @@ const LinhaTarefa = ({ tarefa, statusOptions, onTrocar }: LinhaTarefaProps) => {
                 </span>
             </TableCell>
             <TableCell className="py-1.5 text-[13px] text-[#8A9098]">{tarefa.projeto.nome}</TableCell>
-            <TableCell className="py-1.5">
-                <div className="flex flex-row flex-wrap gap-1">
-                    {tarefa.labels.map((label) => (
-                        <span key={label.id} className="rounded-md border border-[#24272B] bg-[#121518] px-1.5 py-0.5 text-[10.5px] text-[#A9AEB4]">{label.nome}</span>
-                    ))}
-                </div>
-            </TableCell>
+            <TableCell className="py-1.5 font-mono text-[12px] text-[#7C8189]">{formatarDia(tarefa.data_final)}</TableCell>
         </TableRow>
     );
 };

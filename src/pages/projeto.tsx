@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { CheckIcon, ChevronRight, Link2, Trash2, Users } from "lucide-react";
+import { CheckIcon, ChevronRight, Link2, Plus, Trash2, Users } from "lucide-react";
+import BotaoPainel from "@/components/BotaoPainel";
 import Layout from "@/components/Layout";
 import ListaAgrupada from "@/components/ListaAgrupada";
 import DescricaoMarkdown from "@/components/DescricaoMarkdown";
@@ -16,6 +17,8 @@ import { deleteProjeto, fetchProjeto, updateProjeto, type DadosEdicaoProjeto, ty
 import { fetchStatus, ordenarStatus, type Status } from "@/fetchs/fetchStatus";
 import { AVISO_PRAZO, dataParaInput, prazoAntesDoInicio, updateTarefa, type DadosEdicaoTarefa } from "@/fetchs/fetchTarefas";
 import { copiarTexto, linkDoProjeto } from "@/utils/copiarLink";
+import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
+import { useAbrirCriarTarefa, useAoCriarTarefa } from "@/context/CriarTarefaContext";
 
 const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-[#C9C5BE] hover:bg-[#151A1E] data-[state=open]:bg-[#151A1E]";
 const estiloConteudo = "bg-[#151A1E] border border-[#333B44] text-white";
@@ -24,6 +27,16 @@ const estiloData = "h-8 w-full rounded-md border-transparent bg-transparent px-2
 
 //só id inteiro positivo vai à API; o resto é "não encontrado" sem pedido (RF-48)
 const idDaRota = (valor?: string) => (valor && /^[1-9]\d*$/.test(valor) ? Number(valor) : null);
+
+//abre o dialog de criar já no projeto da página (RF-61); fica dentro do Layout, que hospeda o dialog
+const BotaoNovaTarefa = ({ idProjeto }: { idProjeto: number }) => {
+    const abrir = useAbrirCriarTarefa();
+    return (
+        <Button variant="ghost" size="sm" className="ml-auto text-[#8A9098]" onClick={() => abrir({ idProjeto })}>
+            <Plus aria-hidden="true" />Nova tarefa
+        </Button>
+    );
+};
 
 type Leitura = { estado: "carregando" } | { estado: "naoEncontrado" } | { estado: "erro"; mensagem: string };
 
@@ -61,6 +74,14 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
     const [inicio, setInicio] = useState<string | null>(null);
     const [prazo, setPrazo] = useState<string | null>(null);
     const [copiado, setCopiado] = useState(false);
+    const [painelRecolhido, setPainelRecolhido] = usePreferencia(PREF_PAINEL_RECOLHIDO, false);
+
+    //tarefa criada (por aqui ou pela tecla C): relê os grupos e o projeto, que tem o progresso (RF-34)
+    useAoCriarTarefa(() => {
+        if (id === null) return;
+        setRecarga((n) => n + 1);
+        fetchProjeto(id).then(setProjeto).catch((error) => toast.error(comMotivo("Erro ao atualizar o projeto", error)));
+    });
 
     useEffect(() => {
         if (id === null) return;
@@ -208,7 +229,7 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                     />
                 </header>
 
-                <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-10">
+                <div className={`grid items-start gap-10 ${painelRecolhido ? "grid-cols-[minmax(0,1fr)_40px]" : "grid-cols-[minmax(0,1fr)_300px]"}`}>
                     <div data-coluna="principal" className="flex min-w-0 flex-col gap-3">
                         <Input
                             aria-label="Nome do projeto"
@@ -221,12 +242,24 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                         <DescricaoMarkdown valor={projeto.descricao} onGravar={(descricao) => gravar({ descricao })} />
 
                         <section aria-label="Tarefas do projeto" className="mt-3 border-t border-[#1C1F23] pt-5">
-                            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Tarefas</h2>
+                            <div className="flex items-center">
+                                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Tarefas</h2>
+                                <BotaoNovaTarefa idProjeto={projeto.id} />
+                            </div>
                             <ListaAgrupada filtros={{ idProjeto: projeto.id }} statusOptions={statusTarefa} recarga={recarga} onTrocar={trocarNaTarefa} />
                         </section>
                     </div>
 
+                    {painelRecolhido && (
+                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-[#1C1F23] bg-[#0E1012] py-1">
+                            <BotaoPainel recolhido onAlternar={() => setPainelRecolhido(false)} />
+                        </div>
+                    )}
+                    {!painelRecolhido && (
                     <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-3">
+                        <div className="-mt-1 -mr-1 flex justify-end">
+                            <BotaoPainel recolhido={false} onAlternar={() => setPainelRecolhido(true)} />
+                        </div>
                         <Propriedade rotulo="Status">
                             <Select value={String(projeto.idStatus)} onValueChange={trocarStatus}>
                                 <SelectTrigger aria-label="Status" className={estiloGatilho}><SelectValue /></SelectTrigger>
@@ -273,6 +306,7 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                             <div className="px-2 py-1"><Progresso progresso={projeto.progresso} /></div>
                         </Propriedade>
                     </aside>
+                    )}
                 </div>
             </div>
             <DialogMembrosProjeto open={membrosAberto} onOpenChange={mudarMembros} projeto={projeto} />

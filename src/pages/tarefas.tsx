@@ -13,7 +13,7 @@ import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
 import { fetchUsuarios } from "@/fetchs/fetchUsuarios";
 import { consultaParaUrl, fetchTarefas, lerConsultaDaUrl, updateTarefa, type DadosEdicaoTarefa, type FiltrosTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
-import { useAbrirCriarTarefa } from "@/context/CriarTarefaContext";
+import { useAbrirCriarTarefa, useAoCriarTarefa } from "@/context/CriarTarefaContext";
 import type { Label } from "@/pages/labels";
 import type { Usuario } from "@/pages/usuarios";
 
@@ -44,7 +44,7 @@ const comMotivo = (texto: string, error: unknown) => {
 //o dialog de criar é o único do app, hospedado pelo Layout, o mesmo da tecla C (RF-57, D-13)
 const BotaoNovaTarefa = () => {
     const abrir = useAbrirCriarTarefa();
-    return <Button variant="destructive" onClick={abrir}>Nova Tarefa</Button>;
+    return <Button variant="destructive" onClick={() => abrir()}>Nova Tarefa</Button>;
 }
 
 const Tarefas = () => {
@@ -66,6 +66,8 @@ const Tarefas = () => {
 
     //relê a mesma consulta (depois de uma troca na linha)
     const [recarga, setRecarga] = useState(0);
+    //tarefa criada pelo dialog: a lista relê, nos dois modos (RF-34)
+    useAoCriarTarefa(() => setRecarga((n) => n + 1));
 
     useEffect(() => {
         let ativo = true;

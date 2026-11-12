@@ -14,7 +14,8 @@ export interface Status {
 export interface DadosStatus {
     nome: string;
     cor: string | null;
-    ordem: number;
+    //ausente no POST: vai para o fim (RF-21); a tela não envia, a ordem muda por arrastar (RF-63)
+    ordem?: number;
     isFinal: boolean;
 }
 
@@ -58,5 +59,13 @@ export const updateStatus = async (tipo: TipoStatus, id: number, dados: DadosSta
 export const deleteStatus = async (tipo: TipoStatus, id: number) => {
     return apiClient<Status>(`${rotaDoTipo(tipo)}/${id}`, {
         method: "DELETE",
+    });
+}
+
+//grava a ordem do cadastro inteiro: ids na ordem nova (RF-62); devolve a lista já ordenada
+export const reordenarStatus = async (tipo: TipoStatus, ids: number[]) => {
+    return apiClient<Status[]>(`${rotaDoTipo(tipo)}/ordem`, {
+        method: "PUT",
+        body: JSON.stringify({ ids }),
     });
 }

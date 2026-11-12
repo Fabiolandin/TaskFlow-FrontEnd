@@ -5,8 +5,8 @@ import Sidebar from "@/components/Sidebar";
 import DialogNewTarefa, { type OpcoesTarefa } from "@/components/DialogNewTarefa";
 import BuscaRapida from "@/components/BuscaRapida";
 import { comMotivo } from "@/api/apiClient";
-import { CriarTarefaContext } from "@/context/CriarTarefaContext";
-import { createTarefa, type DadosNovaTarefa } from "@/fetchs/fetchTarefas";
+import { avisarTarefaCriada, CriarTarefaContext, type InicioCriarTarefa } from "@/context/CriarTarefaContext";
+import { createTarefa, type CamposTarefa, type DadosNovaTarefa } from "@/fetchs/fetchTarefas";
 import { fetchProjetos } from "@/fetchs/fetchProjetos";
 import { fetchStatus } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
@@ -40,11 +40,16 @@ export default function Layout({ children }: LayoutProps) {
     const [criarAberto, setCriarAberto] = useState(false);
     const [aberturaCriar, setAberturaCriar] = useState(0);
     const [opcoes, setOpcoes] = useState<OpcoesTarefa>(OPCOES_VAZIAS);
+    //campos que a abertura deixa preenchidos (RF-61); o resto nasce vazio
+    const [inicial, setInicial] = useState<Partial<CamposTarefa>>({});
+    const [tarefaPai, setTarefaPai] = useState<InicioCriarTarefa["tarefaPai"]>(undefined);
     const [buscaAberta, setBuscaAberta] = useState(false);
     const [aberturaBusca, setAberturaBusca] = useState(0);
 
-    const abrirCriar = () => {
+    const abrirCriar = (inicio?: InicioCriarTarefa) => {
         setAberturaCriar((n) => n + 1);
+        setInicial(inicio?.idProjeto ? { idProjeto: String(inicio.idProjeto) } : {});
+        setTarefaPai(inicio?.tarefaPai);
         setOpcoes(OPCOES_VAZIAS);
         setCriarAberto(true);
         Promise.all([fetchProjetos(1, 100), fetchStatus("tarefa"), fetchLabels()])
@@ -52,12 +57,15 @@ export default function Layout({ children }: LayoutProps) {
             .catch((error) => toast.error(comMotivo("Erro ao buscar projetos, status e labels", error)));
     }
 
-    //criada, vai para a página da tarefa nova; a falha mantém o dialog aberto com a mensagem da API (RF-34)
+    //criada, a tela não muda: aviso com a ação Abrir e a tela atual relê (RF-34); a falha mantém o dialog aberto com a mensagem da API
     const criarTarefa = async (dados: DadosNovaTarefa) => {
         try {
-            const nova = await createTarefa(dados);
-            toast.success("Tarefa criada com sucesso!");
-            navigate(`/tarefas/${nova.id}`);
+            const nova = await createTarefa(tarefaPai ? { ...dados, idTarefaPai: tarefaPai.id } : dados);
+            toast.success("Tarefa criada", {
+                description: nova.nome,
+                action: { label: "Abrir", onClick: () => navigate(`/tarefas/${nova.id}`) },
+            });
+            avisarTarefaCriada(nova.id);
             return true;
         } catch (error) {
             toast.error(comMotivo("Erro ao criar tarefa", error));
@@ -94,7 +102,8 @@ export default function Layout({ children }: LayoutProps) {
                     {children}
                 </main>
             </div>
-            <DialogNewTarefa key={`criar-${aberturaCriar}`} open={criarAberto} onOpenChange={setCriarAberto} onCreateTarefa={criarTarefa} {...opcoes} />
+            <DialogNewTarefa key={`criar-${aberturaCriar}`} open={criarAberto} onOpenChange={setCriarAberto} onCreateTarefa={criarTarefa} inicial={inicial}
+                titulo={tarefaPai ? `Nova sub-tarefa de ${tarefaPai.nome}` : undefined} projetoFixo={!!tarefaPai} {...opcoes} />
             <BuscaRapida key={`busca-${aberturaBusca}`} open={buscaAberta} onOpenChange={setBuscaAberta} />
         </CriarTarefaContext.Provider>
     );

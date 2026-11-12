@@ -32,6 +32,10 @@ export interface Tarefa {
     responsavel: Membro | null;
     criador: Membro;
     labels: LabelDaTarefa[];
+    //sub-tarefas (RF-65, RF-32): a pai direta e a contagem das filhas diretas
+    idTarefaPai: number | null;
+    tarefaPai: { id: number; nome: string } | null;
+    subtarefas: { total: number; concluidas: number };
 }
 
 export interface PaginaTarefas {
@@ -49,6 +53,8 @@ export interface FiltrosTarefa {
     idLabel?: number;
     //responsável OU criador (RF-38)
     idUsuarioEnvolvido?: number;
+    //só as sub-tarefas diretas desta tarefa (RF-31)
+    idTarefaPai?: number;
 }
 
 //o que o formulário guarda (tudo string, como vem dos inputs; "" = não escolhido)
@@ -109,6 +115,8 @@ export interface DadosNovaTarefa {
     data_final?: string;
     idUsuarioResponsavel?: number;
     labelIds: number[];
+    //só na criação (RF-65)
+    idTarefaPai?: number;
 }
 
 export const montarDadosNovaTarefa = (c: CamposTarefa): DadosNovaTarefa => {

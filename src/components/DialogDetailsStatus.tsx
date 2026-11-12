@@ -3,7 +3,8 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import type { DadosStatus, Status } from "@/fetchs/fetchStatus";
-import { AVISO_COR, corValida } from "@/fetchs/fetchStatus";
+import { corValida } from "@/fetchs/fetchStatus";
+import SeletorCor from "./SeletorCor";
 
 interface DialogDetailsStatusProps {
     open: boolean;
@@ -18,17 +19,16 @@ const DialogDetailsStatus = ({ open, onOpenChange, statusSelecionado, onEditStat
     //states com os campos, carregados do status selecionado
     const [nome, setNome] = useState(statusSelecionado?.nome ?? "");
     const [cor, setCor] = useState(statusSelecionado?.cor ?? "");
-    const [ordem, setOrdem] = useState(statusSelecionado ? String(statusSelecionado.ordem) : "");
     const [isFinal, setIsFinal] = useState(statusSelecionado?.isFinal ?? false);
 
-    //nome e ordem (inteiro) são obrigatórios na API; cor é opcional, mas se vier é #RRGGBB
-    const valido = nome.trim() !== "" && ordem.trim() !== "" && Number.isInteger(Number(ordem)) && corValida(cor);
+    //nome é obrigatório; cor é opcional, mas se vier é #RRGGBB; a ordem não é pedida (RF-63: novo vai para o fim, editar não muda)
+    const valido = nome.trim() !== "" && corValida(cor);
 
     const handleSubmit = async () => {
         if (!statusSelecionado || !valido) return;
         try {
             //cor vazia vai como null: limpa a cor gravada
-            await onEditStatus(statusSelecionado.id, { nome: nome.trim(), cor: cor.trim() || null, ordem: Number(ordem), isFinal });
+            await onEditStatus(statusSelecionado.id, { nome: nome.trim(), cor: cor.trim() || null, isFinal });
             onOpenChange(false);
         } catch {
             //a página já mostrou o toast de erro; o dialog fica aberto para corrigir
@@ -54,25 +54,8 @@ const DialogDetailsStatus = ({ open, onOpenChange, statusSelecionado, onEditStat
                     onChange={(e) => setNome(e.target.value)}
                     />
 
-                    <p className="text-gray-400 text-[13px]">Cor (hex, opcional)</p>
-                    <Input
-                    className="text-white bg-[#151A1E] border-[#333B44] mb-2 h-10"
-                    type="text"
-                    placeholder="ex . #E5484D"
-                    value={cor}
-                    onChange={(e) => setCor(e.target.value)}
-                    />
-                    {!corValida(cor) && <p className="text-red-400 text-[12px] -mt-1 mb-2">{AVISO_COR}</p>}
-
-                    <p className="text-gray-400 text-[13px]">Ordem</p>
-                    <Input
-                    className="text-white bg-[#151A1E] border-[#333B44] mb-2 h-10"
-                    type="number"
-                    step={1}
-                    placeholder="ex . 1"
-                    value={ordem}
-                    onChange={(e) => setOrdem(e.target.value)}
-                    />
+                    <p className="text-gray-400 text-[13px]">Cor</p>
+                    <SeletorCor valor={cor} onChange={setCor} />
 
                     <label className="flex items-center gap-2 text-gray-400 text-[13px] mb-2">
                         <input type="checkbox" checked={isFinal} onChange={(e) => setIsFinal(e.target.checked)} />

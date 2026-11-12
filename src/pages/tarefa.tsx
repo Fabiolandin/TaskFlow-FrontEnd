@@ -7,6 +7,7 @@ import StatusIcon from "@/components/StatusIcon";
 import PrioridadeIcon from "@/components/PrioridadeIcon";
 import ComentariosDaTarefa from "@/components/ComentariosDaTarefa";
 import DescricaoMarkdown from "@/components/DescricaoMarkdown";
+import SubTarefas from "@/components/SubTarefas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,6 +21,8 @@ import { fetchAtividades, type Atividade } from "@/fetchs/fetchAtividades";
 import type { Membro } from "@/fetchs/fetchMembros";
 import type { Label } from "@/pages/labels";
 import { copiarTexto, linkDaTarefa } from "@/utils/copiarLink";
+import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
+import BotaoPainel from "@/components/BotaoPainel";
 
 const SEM_RESPONSAVEL = "sem-responsavel";
 const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-[#C9C5BE] hover:bg-[#151A1E] data-[state=open]:bg-[#151A1E]";
@@ -67,6 +70,9 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
     const [labelsAberto, setLabelsAberto] = useState(false);
     const [labelsMarcadas, setLabelsMarcadas] = useState<number[] | null>(null);
     const [copiado, setCopiado] = useState(false);
+    const [painelRecolhido, setPainelRecolhido] = usePreferencia(PREF_PAINEL_RECOLHIDO, false);
+    //trilha (RF-67): a cadeia de pais, da mais alta até a pai direta
+    const [ancestrais, setAncestrais] = useState<{ id: number; nome: string }[]>([]);
     //histórico intercalado com os comentários (RF-55); relido depois de cada gravação
     const [atividades, setAtividades] = useState<Atividade[] | null>(null);
 
@@ -101,6 +107,23 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
             .catch((error) => { if (ativo) toast.error(comMotivo("Erro ao buscar o histórico da tarefa", error)) });
         return () => { ativo = false };
     }, [id]);
+
+    //sobe pela cadeia de pais (GET /tarefas/:id de cada um); a pai não muda depois de criada (RF-65)
+    const paiDireto = tarefa?.tarefaPai ?? null;
+    useEffect(() => {
+        if (!paiDireto) return;
+        let ativo = true;
+        (async () => {
+            const cadeia = [paiDireto];
+            let atual = await fetchTarefa(paiDireto.id);
+            while (atual.tarefaPai && cadeia.length < 50) {
+                cadeia.unshift(atual.tarefaPai);
+                atual = await fetchTarefa(atual.tarefaPai.id);
+            }
+            if (ativo) setAncestrais(cadeia);
+        })().catch((error) => { if (ativo) toast.error(comMotivo("Erro ao buscar as tarefas-pai", error)) });
+        return () => { ativo = false };
+    }, [paiDireto?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     //membros do projeto atual da tarefa, de GET /projetos/:id (RF-26, C-5); relidos quando o projeto muda
     const idProjeto = tarefa?.idProjeto;
@@ -224,6 +247,12 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                     <nav aria-label="Trilha" className="flex min-w-0 items-center gap-1.5 text-[13px]">
                         <Link to={`/projetos/${tarefa.idProjeto}`} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{tarefa.projeto.nome}</Link>
                         <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
+                        {(ancestrais.length ? ancestrais : tarefa.tarefaPai ? [tarefa.tarefaPai] : []).map((a) => (
+                            <span key={a.id} className="flex min-w-0 items-center gap-1.5">
+                                <Link to={`/tarefas/${a.id}`} data-ancestral={a.id} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{a.nome}</Link>
+                                <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
+                            </span>
+                        ))}
                         <span className="truncate text-[#C9C5BE]">{tarefa.nome}</span>
                     </nav>
                     <Button variant="ghost" size="sm" aria-label="Copiar link" className="ml-auto text-[#8A9098]" onClick={copiar}>
@@ -232,7 +261,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                     </Button>
                 </header>
 
-                <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-10">
+                <div className={`grid items-start gap-10 ${painelRecolhido ? "grid-cols-[minmax(0,1fr)_40px]" : "grid-cols-[minmax(0,1fr)_300px]"}`}>
                     <div data-coluna="principal" className="flex min-w-0 flex-col gap-3">
                         <Input
                             aria-label="Título"
@@ -243,10 +272,20 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                             className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-[#E7E4DF] hover:bg-[#121518] focus-visible:bg-[#121518] focus-visible:ring-0"
                         />
                         <DescricaoMarkdown valor={tarefa.descricao} onGravar={(descricao) => gravar({ descricao })} />
+                        <SubTarefas tarefa={tarefa} statusOptions={statusOptions} />
                         <ComentariosDaTarefa idTarefa={tarefa.id} atividades={atividades} />
                     </div>
 
+                    {painelRecolhido && (
+                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-[#1C1F23] bg-[#0E1012] py-1">
+                            <BotaoPainel recolhido onAlternar={() => setPainelRecolhido(false)} />
+                        </div>
+                    )}
+                    {!painelRecolhido && (
                     <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-3">
+                        <div className="-mt-1 -mr-1 flex justify-end">
+                            <BotaoPainel recolhido={false} onAlternar={() => setPainelRecolhido(true)} />
+                        </div>
                         <Propriedade rotulo="Status">
                             <Select value={String(tarefa.idStatus)} onValueChange={trocarStatus}>
                                 <SelectTrigger aria-label="Status" className={estiloGatilho}><SelectValue /></SelectTrigger>
@@ -340,6 +379,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                             </DropdownMenu>
                         </Propriedade>
                     </aside>
+                    )}
                 </div>
             </div>
         </Layout>

@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/api/apiClient";
 import { fetchDashboard, type Dashboard } from "@/fetchs/fetchDashboard";
+import { useAoCriarTarefa } from "@/context/CriarTarefaContext";
 
 //cor de reserva para status sem cor (Neutro do DESIGN.md) e cores dos cartões e do gráfico de abertas x concluídas
 const COR_RESERVA = "#6E7379";
@@ -70,6 +71,9 @@ const Grafico = ({ titulo, altura, children }: GraficoProps) => (
 //painel inicial: números gerais das tarefas, lidos ao abrir a página (SPEC-009, RF-40)
 const DashboardPage = () => {
     const [estado, setEstado] = useState<Estado>({ tipo: "carregando" });
+    //tarefa criada pela tecla C: os números são relidos (RF-34)
+    const [recarga, setRecarga] = useState(0);
+    useAoCriarTarefa(() => setRecarga((n) => n + 1));
 
     useEffect(() => {
         let ativo = true;
@@ -77,7 +81,7 @@ const DashboardPage = () => {
             .then((resposta) => { if (ativo) setEstado({ tipo: "pronto", dados: resposta.tarefas }) })
             .catch((error) => { if (ativo) setEstado({ tipo: "erro", mensagem: mensagemDoErro(error) }) });
         return () => { ativo = false };
-    }, []);
+    }, [recarga]);
 
     const dados = estado.tipo === "pronto" ? estado.dados : undefined;
 

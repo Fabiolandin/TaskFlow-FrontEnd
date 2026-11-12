@@ -1,15 +1,24 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type DragEvent, type KeyboardEvent } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pencil, XIcon } from "lucide-react";
+import { GripVertical, Pencil, XIcon } from "lucide-react";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { toast } from "sonner";
-import { createStatus, deleteStatus, fetchStatus, updateStatus } from "@/fetchs/fetchStatus";
+import { createStatus, deleteStatus, fetchStatus, reordenarStatus, updateStatus } from "@/fetchs/fetchStatus";
 import type { DadosStatus, Status as StatusItem, TipoStatus } from "@/fetchs/fetchStatus";
 import DialogNewStatus from "@/components/DialogNewStatus";
 import DialogDetailsStatus from "@/components/DialogDetailsStatus";
-import { ApiError } from "@/api/apiClient";
+import { ApiError, comMotivo } from "@/api/apiClient";
+
+//move o item `de` para a posição `para`, sem mexer na lista original
+const mover = <T,>(lista: T[], de: number, para: number) => {
+    const nova = [...lista];
+    const [item] = nova.splice(de, 1);
+    nova.splice(para, 0, item);
+    return nova;
+};
+const mesmaOrdem = (a: StatusItem[], b: StatusItem[]) => a.length === b.length && a.every((s, i) => s.id === b[i].id);
 
 //o tipo vem da rota: /status/tarefa ou /status/projeto, sem abas (RF-42, SPEC-015)
 const Status = ({ tipo }: { tipo: TipoStatus }) => {
@@ -23,6 +32,9 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
     //lista do cadastro da rota, na ordem que a API devolve (por `ordem`)
     const [statusDaAba, setStatusDaAba] = useState<StatusItem[]>([])
     const [statusSelecionado, setStatusSelecionado] = useState<StatusItem | null>(null)
+    //arrastar (RF-63): a lista na tela muda enquanto arrasta; ao soltar, compara com a gravada e grava
+    const [arrastando, setArrastando] = useState<number | null>(null)
+    const [gravada, setGravada] = useState<StatusItem[]>([])
 
     const rotuloDaAba = tipo === "projeto" ? "de projeto" : "de tarefa"
 
@@ -30,6 +42,7 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
         try {
             const resposta = await fetchStatus(tipo)
             setStatusDaAba(resposta)
+            setGravada(resposta)
         } catch {
             toast.error("Erro ao buscar status")
         }
@@ -68,6 +81,55 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
         }
     }
 
+    //grava a ordem inteira (RF-62); a falha avisa e a lista volta à ordem gravada
+    const gravarOrdem = async (nova: StatusItem[]) => {
+        if (mesmaOrdem(nova, gravada)) return
+        setStatusDaAba(nova)
+        try {
+            const resposta = await reordenarStatus(tipo, nova.map((s) => s.id))
+            setStatusDaAba(resposta)
+            setGravada(resposta)
+        } catch (error) {
+            toast.error(comMotivo("Não foi possível salvar a ordem", error))
+            setStatusDaAba(gravada)
+        }
+    }
+
+    const comecarArrastar = (e: DragEvent, id: number) => {
+        setArrastando(id)
+        e.dataTransfer.effectAllowed = "move"
+        e.dataTransfer.setData("text/plain", String(id))
+        const linha = (e.currentTarget as HTMLElement).closest("tr")
+        if (linha) e.dataTransfer.setDragImage(linha, 16, 16)
+    }
+
+    //passando sobre outra linha, a arrastada toma o lugar dela na tela
+    const passarSobre = (e: DragEvent, alvo: number) => {
+        if (arrastando === null) return
+        e.preventDefault()
+        if (alvo === arrastando) return
+        const de = statusDaAba.findIndex((s) => s.id === arrastando)
+        const para = statusDaAba.findIndex((s) => s.id === alvo)
+        setStatusDaAba(mover(statusDaAba, de, para))
+    }
+
+    const soltar = () => {
+        if (arrastando === null) return
+        setArrastando(null)
+        gravarOrdem(statusDaAba)
+    }
+
+    //teclado na alça: ↑/↓ move uma posição e grava; o foco segue a alça
+    const teclarNaAlca = async (e: KeyboardEvent, id: number) => {
+        if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return
+        e.preventDefault()
+        const de = statusDaAba.findIndex((s) => s.id === id)
+        const para = e.key === "ArrowUp" ? de - 1 : de + 1
+        if (para < 0 || para >= statusDaAba.length) return
+        await gravarOrdem(mover(statusDaAba, de, para))
+        requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-alca="${id}"]`)?.focus())
+    }
+
     //funcao para abrir o dialog de edição com o status selecionado
     const handleDialogOpen = (status: StatusItem) => {
         setStatusSelecionado(status)
@@ -80,7 +142,10 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
         let ativo = true
         fetchStatus(tipo)
             .then((lista) => {
-                if (ativo) setStatusDaAba(lista)
+                if (ativo) {
+                    setStatusDaAba(lista)
+                    setGravada(lista)
+                }
             })
             .catch(() => toast.error("Erro ao buscar status"))
         return () => { ativo = false }
@@ -100,7 +165,7 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
                 <Table>
                     <TableHeader>
                         <TableRow className="border-white/10 hover:bg-transparent">
-                            <TableHead className="w-[100px] font-mono text-xs uppercase tracking-wide text-zinc-400">Ordem</TableHead>
+                            <TableHead className="w-10"><span className="sr-only">Reordenar</span></TableHead>
                             <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Nome</TableHead>
                             <TableHead className="font-mono text-xs uppercase tracking-wide text-zinc-400">Cor</TableHead>
                             <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Encerrado</TableHead>
@@ -109,8 +174,18 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
                     </TableHeader>
                     <TableBody>
                         {statusDaAba.map((status) => (
-                            <TableRow key={status.id} className="border-white/10 hover:bg-[#151A1E]">
-                                <TableCell className="font-mono text-zinc-500">{status.ordem}</TableCell>
+                            <TableRow key={status.id} data-status-id={status.id}
+                                onDragOver={(e) => passarSobre(e, status.id)} onDrop={(e) => { e.preventDefault(); soltar() }}
+                                className={`border-white/10 hover:bg-[#151A1E] ${arrastando === status.id ? "opacity-50" : ""}`}>
+                                <TableCell className="w-10 py-1">
+                                    <button type="button" draggable data-alca={status.id}
+                                        aria-label="Arrastar para reordenar" title="Arraste, ou use ↑/↓"
+                                        onDragStart={(e) => comecarArrastar(e, status.id)} onDragEnd={soltar}
+                                        onKeyDown={(e) => teclarNaAlca(e, status.id)}
+                                        className="flex size-7 cursor-grab items-center justify-center rounded text-zinc-500 outline-none hover:bg-white/5 hover:text-zinc-300 focus-visible:ring-2 focus-visible:ring-[#3A3F45] active:cursor-grabbing">
+                                        <GripVertical aria-hidden="true" className="size-4" />
+                                    </button>
+                                </TableCell>
                                 <TableCell className="font-medium text-white">{status.nome}</TableCell>
                                 <TableCell className="font-mono text-zinc-400">
                                     {status.cor ? (

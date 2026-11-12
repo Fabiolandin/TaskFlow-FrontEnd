@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { comMotivo } from "@/api/apiClient";
 import { useAuth } from "@/context/AuthContext";
+import { useAoCriarTarefa } from "@/context/CriarTarefaContext";
 import { fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchLabels } from "@/fetchs/fetchLabel";
@@ -38,6 +39,8 @@ const MinhasTarefas = () => {
     const [statusOptions, setStatusOptions] = useState<Status[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
     const [recarga, setRecarga] = useState(0);
+    //tarefa criada pela tecla C: a lista relê (RF-34)
+    useAoCriarTarefa(() => setRecarga((n) => n + 1));
 
     useEffect(() => {
         let ativo = true;

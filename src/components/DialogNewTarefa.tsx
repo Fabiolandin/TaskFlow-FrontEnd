@@ -23,10 +23,12 @@ const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
 interface FormularioTarefaProps extends OpcoesTarefa {
     campos: CamposTarefa;
     onChange: (parcial: Partial<CamposTarefa>) => void;
+    //sub-tarefa: o projeto é o da pai e não se troca (RF-65)
+    projetoFixo?: boolean;
 }
 
 //campos do dialog de criar tarefa (a edição é na página da tarefa desde a SPEC-015)
-export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, labels }: FormularioTarefaProps) => {
+export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, labels, projetoFixo }: FormularioTarefaProps) => {
     //responsável só entre os membros do projeto escolhido (RF-26)
     const membros = projetos.find((p) => String(p.id) === campos.idProjeto)?.membros ?? [];
 
@@ -58,7 +60,7 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
             <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-gray-400 text-[13px]">Projeto</p>
-                    <Select value={campos.idProjeto} onValueChange={(v) => onChange({ idProjeto: v, idUsuarioResponsavel: "" })}>
+                    <Select value={campos.idProjeto} onValueChange={(v) => onChange({ idProjeto: v, idUsuarioResponsavel: "" })} disabled={projetoFixo}>
                         <SelectTrigger aria-label="Projeto" className={estiloSelect}>
                             <SelectValue placeholder="Selecione o projeto" />
                         </SelectTrigger>
@@ -181,11 +183,15 @@ interface DialogNewTarefaProps extends OpcoesTarefa {
     onOpenChange: (open: boolean) => void;
     //devolve se a tarefa foi gravada; os toasts são da página
     onCreateTarefa: (dados: DadosNovaTarefa) => Promise<boolean>;
+    //campos já preenchidos nesta abertura (RF-61)
+    inicial?: Partial<CamposTarefa>;
+    titulo?: string;
+    projetoFixo?: boolean;
 }
 
 //a página monta este dialog com `key` nova a cada abertura: cada abertura começa vazia
-const DialogNewTarefa = ({ open, onOpenChange, onCreateTarefa, ...opcoes }: DialogNewTarefaProps) => {
-    const [campos, setCampos] = useState<CamposTarefa>(CAMPOS_VAZIOS);
+const DialogNewTarefa = ({ open, onOpenChange, onCreateTarefa, inicial, titulo, projetoFixo, ...opcoes }: DialogNewTarefaProps) => {
+    const [campos, setCampos] = useState<CamposTarefa>(() => ({ ...CAMPOS_VAZIOS, ...inicial }));
     const [salvando, setSalvando] = useState(false);
 
     //nome, projeto, status e prioridade são obrigatórios na API; prazo antes do início não vai (RF-34, L-1)
@@ -206,11 +212,11 @@ const DialogNewTarefa = ({ open, onOpenChange, onCreateTarefa, ...opcoes }: Dial
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="bg-[#0E1012] w-[560px] max-h-[90vh] overflow-y-auto flex-col flex p-5">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-[17px]">Nova Tarefa</DialogTitle>
+                        <DialogTitle className="text-white text-[17px]">{titulo ?? "Nova Tarefa"}</DialogTitle>
                         <hr className="border-gray-600" />
                     </DialogHeader>
 
-                    <FormularioTarefa campos={campos} onChange={(p) => setCampos((c) => ({ ...c, ...p }))} {...opcoes} />
+                    <FormularioTarefa campos={campos} onChange={(p) => setCampos((c) => ({ ...c, ...p }))} projetoFixo={projetoFixo} {...opcoes} />
 
                     <DialogFooter className="bg-[#0E1012]">
                         <Button variant="ghost" className="text-gray-400" onClick={() => onOpenChange(false)}>Cancelar</Button>

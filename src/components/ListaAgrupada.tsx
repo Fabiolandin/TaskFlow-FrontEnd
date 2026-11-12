@@ -84,7 +84,7 @@ const ListaAgrupada = ({ filtros, statusOptions, recarga, onTrocar }: ListaAgrup
                     return (
                         <TableBody key={s.id} data-grupo={s.id}>
                             <TableRow className="border-[#14171A] bg-[#101316] hover:bg-[#101316]">
-                                <TableCell colSpan={7} className="p-0">
+                                <TableCell colSpan={6} className="p-0">
                                     <button
                                         type="button"
                                         data-grupo-cabecalho
@@ -104,12 +104,12 @@ const ListaAgrupada = ({ filtros, statusOptions, recarga, onTrocar }: ListaAgrup
                             ))}
                             {aberto && grupo && grupo.total === 0 && (
                                 <TableRow className="border-[#14171A] hover:bg-transparent">
-                                    <TableCell colSpan={7} className="pl-10 text-[12.5px] text-[#61666C]">Nenhuma tarefa</TableCell>
+                                    <TableCell colSpan={6} className="pl-10 text-[12.5px] text-[#61666C]">Nenhuma tarefa</TableCell>
                                 </TableRow>
                             )}
                             {aberto && grupo && grupo.tarefas.length < grupo.total && (
                                 <TableRow className="border-[#14171A] hover:bg-transparent">
-                                    <TableCell colSpan={7} className="py-1 pl-8">
+                                    <TableCell colSpan={6} className="py-1 pl-8">
                                         <Button variant="ghost" size="sm" className="text-[#8A9098]" onClick={() => mostrarMais(s)}>Mostrar mais</Button>
                                     </TableCell>
                                 </TableRow>
