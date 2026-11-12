@@ -1,3 +1,4 @@
+import Avatar from "./Avatar";
 import { useEffect, useState } from "react";
 import { Pencil, XIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -84,11 +85,11 @@ const ComentariosDaTarefa = ({ idTarefa, atividades }: ComentariosDaTarefaProps)
     }
 
     return (
-        <section className="flex flex-col gap-4 border-t border-[#1C1F23] pt-5" aria-label="Atividade">
-            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Atividade</h2>
+        <section className="flex flex-col gap-4 border-t border-borda pt-5" aria-label="Atividade">
+            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Atividade</h2>
 
             {comentarios !== null && comentarios.length === 0 && (atividades ?? []).length === 0 && (
-                <p className="text-[12.5px] text-[#61666C]">Nenhum comentário ainda</p>
+                <p className="text-[12.5px] text-texto-mudo">Nenhum comentário ainda</p>
             )}
 
             {intercalar(atividades ?? [], comentarios ?? []).map((item) => {
@@ -96,25 +97,23 @@ const ComentariosDaTarefa = ({ idTarefa, atividades }: ComentariosDaTarefaProps)
                 const c = item.comentario;
                 return (
                 <div key={`c-${c.id}`} data-testid="comentario" className="group flex flex-row gap-3">
-                    <span data-avatar aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#232B3B] font-mono text-[11px] font-medium text-[#9BB8F0]">
-                        {c.autor.nome.trim().charAt(0).toUpperCase()}
-                    </span>
+                    <Avatar usuario={c.autor} tamanho={28} />
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-row items-center gap-2">
-                            <span data-autor className="text-[13px] font-medium text-[#E7E4DF]">{c.autor.nome}</span>
-                            <time dateTime={c.createdAt} title={formatarDataHora(c.createdAt)} className="text-[12px] text-[#7C8189]">{dataRelativa(c.createdAt)}</time>
-                            {foiEditado(c) && <span className="text-[12px] text-[#61666C]">editado</span>}
+                            <span data-autor className="text-[13px] font-medium text-texto">{c.autor.nome}</span>
+                            <time dateTime={c.createdAt} title={formatarDataHora(c.createdAt)} className="text-[12px] text-texto-fraco">{dataRelativa(c.createdAt)}</time>
+                            {foiEditado(c) && <span className="text-[12px] text-texto-mudo">editado</span>}
                             <span className="ml-auto flex flex-row opacity-60 group-hover:opacity-100">
                                 {usuario?.id === c.idUsuario && (
-                                    <Button variant="ghost" size="icon-sm" aria-label="Editar comentário" className="text-zinc-400 hover:text-white"
+                                    <Button variant="ghost" size="icon-sm" aria-label="Editar comentário" className="text-texto-suave hover:text-texto"
                                         onClick={() => { setEditandoId(c.id); setTextoEdicao(c.comentario); }}>
                                         <Pencil className="size-3.5" />
                                     </Button>
                                 )}
                                 <ConfirmDeleteDialog
                                     trigger={
-                                        <Button variant="ghost" size="icon-sm" aria-label="Excluir comentário" className="text-zinc-400 hover:text-white">
-                                            <XIcon className="size-3.5 text-red-400" />
+                                        <Button variant="ghost" size="icon-sm" aria-label="Excluir comentário" className="text-texto-suave hover:text-texto">
+                                            <XIcon className="size-3.5 text-tom-vermelho-texto" />
                                         </Button>
                                     }
                                     id={c.id}
@@ -126,14 +125,14 @@ const ComentariosDaTarefa = ({ idTarefa, atividades }: ComentariosDaTarefaProps)
                         </div>
                         {editandoId === c.id ? (
                             <div className="mt-1 flex flex-col gap-2">
-                                <Textarea aria-label="Editar texto do comentário" value={textoEdicao} onChange={(e) => setTextoEdicao(e.target.value)} className="border-[#24272B] bg-[#121518] text-[12.5px] text-[#E7E4DF]" />
+                                <Textarea aria-label="Editar texto do comentário" value={textoEdicao} onChange={(e) => setTextoEdicao(e.target.value)} className="border-borda-media bg-hover text-[12.5px] text-texto" />
                                 <div className="flex flex-row justify-end gap-2">
-                                    <Button variant="ghost" className="text-gray-400" onClick={() => setEditandoId(null)}>Cancelar</Button>
+                                    <Button variant="ghost" className="text-texto-suave" onClick={() => setEditandoId(null)}>Cancelar</Button>
                                     <Button variant="destructive" disabled={!textoEdicao.trim()} onClick={() => salvarEdicao(c.id)}>Salvar comentário</Button>
                                 </div>
                             </div>
                         ) : (
-                            <p data-texto className="mt-0.5 whitespace-pre-wrap break-words text-[12.5px] leading-[1.6] text-[#B8B4AD]">{c.comentario}</p>
+                            <p data-texto className="mt-0.5 whitespace-pre-wrap break-words text-[12.5px] leading-[1.6] text-texto-suave">{c.comentario}</p>
                         )}
                     </div>
                 </div>
@@ -141,7 +140,7 @@ const ComentariosDaTarefa = ({ idTarefa, atividades }: ComentariosDaTarefaProps)
             })}
 
             <div className="flex flex-col gap-2">
-                <Textarea aria-label="Novo comentário" placeholder="Escreva um comentário" value={novo} onChange={(e) => setNovo(e.target.value)} className="min-h-16 border-[#24272B] bg-[#121518] text-[12.5px] text-[#E7E4DF]" />
+                <Textarea aria-label="Novo comentário" placeholder="Escreva um comentário" value={novo} onChange={(e) => setNovo(e.target.value)} className="min-h-16 border-borda-media bg-hover text-[12.5px] text-texto" />
                 <Button variant="destructive" className="self-end" disabled={!novo.trim() || enviando} onClick={comentar}>Comentar</Button>
             </div>
         </section>

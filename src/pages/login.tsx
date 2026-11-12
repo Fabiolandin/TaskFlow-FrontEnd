@@ -44,28 +44,28 @@ const Login = () => {
     };
 
     return (
-        <div className="flex h-screen items-center justify-center bg-[#0B0C0E]">
-            <Card className="w-full max-w-sm bg-[#0E1012] border border-white/10">
+        <div className="flex h-screen items-center justify-center bg-fundo">
+            <Card className="w-full max-w-sm bg-superficie border border-texto/10">
                 <CardHeader>
-                    <CardTitle className="text-white">Login</CardTitle>
+                    <CardTitle className="text-texto">Login</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
                         <Input
-                            className="bg-[#0B0C0E] border border-white/10 text-white placeholder:text-zinc-400"
+                            className="bg-fundo border border-texto/10 text-texto placeholder:text-texto-suave"
                             type="email"
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
                         <Input
-                            className="bg-[#0B0C0E] border border-white/10 text-white placeholder:text-zinc-400"
+                            className="bg-fundo border border-texto/10 text-texto placeholder:text-texto-suave"
                             type="password"
                             placeholder="Senha"
                             value={senha}
                             onChange={(e) => setSenha(e.target.value)}
                         />
-                        <Button className="bg-blue-500 hover:bg-blue-600" type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading}>
                             {isLoading ? "Entrando..." : "Entrar"}
                         </Button>
                     </form>

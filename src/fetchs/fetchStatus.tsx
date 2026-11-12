@@ -27,7 +27,7 @@ export const corValida = (cor: string) => {
 }
 
 //cor de reserva de status sem cor (a mesma do Dashboard, RF-40/RF-43)
-export const COR_RESERVA = "#6E7379";
+export const COR_RESERVA = "var(--tf-status-reserva)";
 
 //ordem do cadastro no front: `ordem` crescente, empate por `id` (a API não desempata; RF-43, D-10)
 export const ordenarStatus = <T extends { id: number; ordem: number }>(lista: T[]): T[] =>

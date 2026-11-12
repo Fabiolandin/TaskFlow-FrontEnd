@@ -9,15 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        default: "rounded-controle bg-marca text-[12.5px] font-semibold text-marca-texto hover:bg-marca/85",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-[#151A1E] hover:text-white aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-elevado hover:text-texto aria-expanded:bg-muted aria-expanded:text-foreground",
+        //no app, "destructive" é o botão primário vermelho da marca (RF-80): Nova tarefa, Criar, Comentar…
         destructive:
-          "bg-red-500 text-white hover:bg-red-900 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "rounded-controle bg-marca text-[12.5px] font-semibold text-marca-texto hover:bg-marca/85 focus-visible:border-foco focus-visible:ring-foco/40",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

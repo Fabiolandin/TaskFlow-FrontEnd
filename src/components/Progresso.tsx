@@ -6,12 +6,12 @@ const Progresso = ({ progresso }: { progresso: Projeto["progresso"] }) => {
     const pct = total ? Math.round((concluidas / total) * 100) : 0;
     return (
         <div data-progresso className="flex flex-col gap-1.5">
-            <span data-progresso-texto className="font-mono text-[12px] text-[#8A9098]">
+            <span data-progresso-texto className="font-mono text-[12px] text-texto-fraco">
                 {total === 0 ? "Sem tarefas" : `${concluidas} de ${total} concluídas`}
             </span>
             {total > 0 && (
-                <span aria-hidden="true" className="h-1 w-full overflow-hidden rounded-full bg-[#1B1F23]">
-                    <span className="block h-full rounded-full bg-[#4CB782]" style={{ width: `${pct}%` }} />
+                <span aria-hidden="true" className="h-1 w-full overflow-hidden rounded-full bg-realce">
+                    <span className="block h-full rounded-full bg-tom-verde-texto" style={{ width: `${pct}%` }} />
                 </span>
             )}
         </div>

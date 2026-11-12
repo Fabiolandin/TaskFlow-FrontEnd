@@ -19,8 +19,8 @@ import type { Usuario } from "@/pages/usuarios";
 
 const PAGINA_VAZIA: PaginaTarefas = { data: [], total: 0, page: 1, totalPages: 0 };
 const TODOS = "todos";
-const estiloFiltro = "w-44 h-9! rounded-md bg-[#151A1E] border-[#333B44] text-white";
-const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
+const estiloFiltro = "w-44 h-9! rounded-md bg-elevado border-borda-forte text-texto";
+const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
 //filtros que vão na URL desta tela (RF-44)
 const CHAVES: (keyof FiltrosTarefa)[] = ["idProjeto", "idStatus", "idUsuarioResponsavel", "idLabel"];
 
@@ -130,7 +130,7 @@ const Tarefas = () => {
             <SelectTrigger aria-label={`Filtrar por ${rotulo}`} className={estiloFiltro}>
                 <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+            <SelectContent className="bg-elevado border border-borda-forte text-texto">
                 <SelectGroup>
                     <SelectItem className={estiloItem} value={TODOS}>{rotulo}: todos</SelectItem>
                     {opcoes.map((o) => (
@@ -146,7 +146,7 @@ const Tarefas = () => {
             type="button"
             aria-pressed={exibicao === valor}
             onClick={() => trocarExibicao(valor)}
-            className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[12.5px] font-medium transition-colors ${exibicao === valor ? "bg-[#1B1F23] text-[#E7E4DF]" : "text-[#7C8189] hover:text-[#E7E4DF]"}`}
+            className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[12.5px] font-medium transition-colors ${exibicao === valor ? "bg-realce text-texto" : "text-texto-fraco hover:text-texto"}`}
         >
             {icone}{rotulo}
         </button>
@@ -155,9 +155,9 @@ const Tarefas = () => {
     return (
         <Layout>
             <div className="flex flex-row items-center gap-3">
-                <h1 className="text-2xl font-bold text-white">Tarefas</h1>
-                {exibicao === "tabela" && <p className="text-sm text-zinc-400 mt-1">{resposta.total} no total</p>}
-                <div className="ml-auto flex items-center gap-0.5 rounded-md border border-[#1C1F23] bg-[#0E1012] p-0.5">
+                <h1 className="text-2xl font-bold text-texto">Tarefas</h1>
+                {exibicao === "tabela" && <p className="text-sm text-texto-suave mt-1">{resposta.total} no total</p>}
+                <div className="ml-auto flex items-center gap-0.5 rounded-md border border-borda bg-superficie p-0.5">
                     {botaoExibicao("agrupado", "Agrupado", <LayoutList aria-hidden="true" className="size-3.5" />)}
                     {botaoExibicao("tabela", "Tabela", <Table2 aria-hidden="true" className="size-3.5" />)}
                 </div>

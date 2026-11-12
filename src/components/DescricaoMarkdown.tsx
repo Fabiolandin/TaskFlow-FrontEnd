@@ -45,7 +45,7 @@ const DescricaoMarkdown = ({ valor, onGravar }: DescricaoMarkdownProps) => {
                 onChange={(e) => setRascunho(e.target.value)}
                 onBlur={sair}
                 placeholder="Escreva em markdown: **negrito**, *itálico*, listas, [links](https://…), `código`"
-                className="-mx-2 min-h-32 border-[#24272B] bg-[#121518] px-2 font-mono text-[12.5px] leading-[1.6] text-[#C9C5BE] placeholder:text-[#5E6369] focus-visible:ring-0"
+                className="-mx-2 min-h-32 border-borda-media bg-hover px-2 font-mono text-[12.5px] leading-[1.6] text-texto-2 placeholder:text-placeholder focus-visible:ring-0"
             />
         );
     }
@@ -53,7 +53,7 @@ const DescricaoMarkdown = ({ valor, onGravar }: DescricaoMarkdownProps) => {
     if (!valor) {
         return (
             <button type="button" data-descricao-vazia onClick={() => editar()}
-                className="-mx-2 rounded-md px-2 py-1.5 text-left text-[13px] text-[#5E6369] hover:bg-[#121518] hover:text-[#8A9098]">
+                className="-mx-2 rounded-md px-2 py-1.5 text-left text-[13px] text-placeholder hover:bg-hover hover:text-texto-fraco">
                 Adicionar descrição…
             </button>
         );
@@ -66,7 +66,7 @@ const DescricaoMarkdown = ({ valor, onGravar }: DescricaoMarkdownProps) => {
             title="Clique para editar"
             onClick={editar}
             onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) editar(); }}
-            className="-mx-2 cursor-text rounded-md px-2 py-1.5 text-[13px] leading-[1.6] text-[#B8B4AD] outline-none hover:bg-[#121518] focus-visible:bg-[#121518]"
+            className="-mx-2 cursor-text rounded-md px-2 py-1.5 text-[13px] leading-[1.6] text-texto-suave outline-none hover:bg-hover focus-visible:bg-hover"
         >
             <MarkdownTexto texto={valor} />
         </div>

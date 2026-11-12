@@ -81,24 +81,24 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
     return (
         <div>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="bg-[#0E1012] w-[500px] flex-col flex p-5">
+                <DialogContent className="bg-superficie w-[500px] flex-col flex p-5">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-[17px]">Novo Projeto</DialogTitle>
-                        <hr className="border-gray-600" />
+                        <DialogTitle className="text-texto text-[17px]">Novo Projeto</DialogTitle>
+                        <hr className="border-texto-mudo" />
                     </DialogHeader>
                     <div className="flex flex-col mt-2">
-                        <p className="text-gray-400 text-[13px]">Nome do projeto</p>
+                        <p className="text-texto-suave text-[13px]">Nome do projeto</p>
                         <Input
-                            className="text-white bg-[#151A1E] border-[#333B44] mb-2 h-10"
+                            className="text-texto bg-elevado border-borda-forte mb-2 h-10"
                             type="text"
                             placeholder="ex. Taskflow Mobile"
                             value={nome}
                             onChange={(e) => setNome(e.target.value)}
                         />
 
-                        <p className="text-gray-400 mt-2 text-[13px]">Descrição</p>
+                        <p className="text-texto-suave mt-2 text-[13px]">Descrição</p>
                         <Textarea
-                            className="text-white bg-[#151A1E] border-[#333B44]"
+                            className="text-texto bg-elevado border-borda-forte"
                             placeholder="Objetivo do projeto"
                             value={descricao}
                             onChange={(e) => setDescricao(e.target.value)}
@@ -108,16 +108,16 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
                     <div className="flex flex-row gap-10">
 
                         <div className="flex flex-col gap-2">
-                            <p className="text-gray-400 text-[13px]">Status</p>
+                            <p className="text-texto-suave text-[13px]">Status</p>
 
                             <Select value={status} onValueChange={setStatus}>
-                                <SelectTrigger className="w-52 h-10! rounded-md bg-[#151A1E] border-[#333B44] text-white">
+                                <SelectTrigger className="w-52 h-10! rounded-md bg-elevado border-borda-forte text-texto">
                                     <SelectValue placeholder="Selecione o status" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                                <SelectContent className="bg-elevado border border-borda-forte text-texto">
                                     <SelectGroup>
                                         {statusOptions.map((item) => (
-                                            <SelectItem className="text-gray-400 focus:bg-[#333B44] focus:text-white" key={item.id} value={String(item.id)}>
+                                            <SelectItem className="text-texto-suave focus:bg-realce focus:text-texto" key={item.id} value={String(item.id)}>
                                                 {item.nome}
                                             </SelectItem>
                                         ))}
@@ -128,9 +128,9 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <p className="text-gray-400 text-[13px]">Data de início</p>
+                            <p className="text-texto-suave text-[13px]">Data de início</p>
                             <Input
-                                className="text-gray-400 bg-[#151A1E] border-[#333B44] w-52 h-10"
+                                className="text-texto-suave bg-elevado border-borda-forte w-52 h-10"
                                 type="date"
                                 value={dataInicio}
                                 onChange={(e) => setDataInicio(e.target.value)}
@@ -138,7 +138,7 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
                         </div>
 
                     </div>
-                    <p className="text-gray-400 text-[13px]">Membros</p>
+                    <p className="text-texto-suave text-[13px]">Membros</p>
                     <div className="flex flex-row flex-wrap gap-2">
                         {usuarios.map((usuario) => {
                             const selecionado = membrosSelecionados.includes(usuario.id);
@@ -148,7 +148,7 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
                                     type="button"
                                     aria-pressed={selecionado}
                                     onClick={() => alternarMembro(usuario.id)}
-                                    className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer ${selecionado ? "bg-[#333B44] border-white/40 text-white" : "bg-[#151A1E] border-[#333B44] text-gray-400"}`}
+                                    className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer ${selecionado ? "bg-borda-forte border-texto/40 text-texto" : "bg-elevado border-borda-forte text-texto-suave"}`}
                                 >
                                     {usuario.nome}
                                 </button>
@@ -156,8 +156,8 @@ const DialogNewProjeto = ({ open, onOpenChange, onCreateProjeto }: DialogNewProj
                         })}
                     </div>
 
-                    <DialogFooter className="bg-[#0E1012]">
-                        <Button variant="ghost" className="text-gray-400" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <DialogFooter className="bg-superficie">
+                        <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Cancelar</Button>
                         <Button variant="destructive" onClick={handleCreateProjeto} disabled={!podeCriar}>Criar Projeto</Button>
                     </DialogFooter>
                 </DialogContent>

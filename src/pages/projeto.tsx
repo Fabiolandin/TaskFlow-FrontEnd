@@ -20,10 +20,10 @@ import { copiarTexto, linkDoProjeto } from "@/utils/copiarLink";
 import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
 import { useAbrirCriarTarefa, useAoCriarTarefa } from "@/context/CriarTarefaContext";
 
-const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-[#C9C5BE] hover:bg-[#151A1E] data-[state=open]:bg-[#151A1E]";
-const estiloConteudo = "bg-[#151A1E] border border-[#333B44] text-white";
-const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
-const estiloData = "h-8 w-full rounded-md border-transparent bg-transparent px-2 font-mono text-[12.5px] text-[#C9C5BE] [color-scheme:dark] hover:bg-[#151A1E] focus-visible:bg-[#151A1E]";
+const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-texto-2 hover:bg-elevado data-[state=open]:bg-elevado";
+const estiloConteudo = "bg-elevado border border-borda-forte text-texto";
+const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
+const estiloData = "h-8 w-full rounded-md border-transparent bg-transparent px-2 font-mono text-[12.5px] text-texto-2 hover:bg-elevado focus-visible:bg-elevado";
 
 //só id inteiro positivo vai à API; o resto é "não encontrado" sem pedido (RF-48)
 const idDaRota = (valor?: string) => (valor && /^[1-9]\d*$/.test(valor) ? Number(valor) : null);
@@ -32,7 +32,7 @@ const idDaRota = (valor?: string) => (valor && /^[1-9]\d*$/.test(valor) ? Number
 const BotaoNovaTarefa = ({ idProjeto }: { idProjeto: number }) => {
     const abrir = useAbrirCriarTarefa();
     return (
-        <Button variant="ghost" size="sm" className="ml-auto text-[#8A9098]" onClick={() => abrir({ idProjeto })}>
+        <Button variant="ghost" size="sm" className="ml-auto text-texto-fraco" onClick={() => abrir({ idProjeto })}>
             <Plus aria-hidden="true" />Nova tarefa
         </Button>
     );
@@ -42,7 +42,7 @@ type Leitura = { estado: "carregando" } | { estado: "naoEncontrado" } | { estado
 
 const Propriedade = ({ rotulo, children }: { rotulo: string; children: ReactNode }) => (
     <div className="grid min-h-9 grid-cols-[92px_minmax(0,1fr)] items-center gap-2">
-        <span className="text-[12px] text-[#7C8189]">{rotulo}</span>
+        <span className="text-[12px] text-texto-fraco">{rotulo}</span>
         <div className="min-w-0">{children}</div>
     </div>
 );
@@ -50,9 +50,9 @@ const Propriedade = ({ rotulo, children }: { rotulo: string; children: ReactNode
 const Aviso = ({ titulo, texto }: { titulo: string; texto: string }) => (
     <Layout>
         <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-            <p className="font-heading text-lg font-semibold text-[#E7E4DF]">{titulo}</p>
-            <p className="text-sm text-[#7C8189]">{texto}</p>
-            <Button asChild variant="ghost" className="text-[#8A9098]">
+            <p className="font-heading text-lg font-semibold text-texto">{titulo}</p>
+            <p className="text-sm text-texto-fraco">{texto}</p>
+            <Button asChild variant="ghost" className="text-texto-fraco">
                 <Link to="/projetos">Voltar para Projetos</Link>
             </Button>
         </div>
@@ -108,7 +108,7 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
     if (!projeto) {
         return (
             <Layout>
-                <p className="py-24 text-center text-sm text-[#7C8189]">Carregando…</p>
+                <p className="py-24 text-center text-sm text-texto-fraco">Carregando…</p>
             </Layout>
         );
     }
@@ -208,17 +208,17 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
             <div className="mx-auto max-w-[1180px]">
                 <header className="mb-6 flex h-9 items-center gap-2">
                     <nav aria-label="Trilha" className="flex min-w-0 items-center gap-1.5 text-[13px]">
-                        <Link to="/projetos" className="text-[#8A9098] hover:text-[#E7E4DF] hover:underline">Projetos</Link>
-                        <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
-                        <span className="truncate text-[#C9C5BE]">{projeto.nome}</span>
+                        <Link to="/projetos" className="text-texto-fraco hover:text-texto hover:underline">Projetos</Link>
+                        <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-placeholder" />
+                        <span className="truncate text-texto-2">{projeto.nome}</span>
                     </nav>
-                    <Button variant="ghost" size="sm" aria-label="Copiar link" className="ml-auto text-[#8A9098]" onClick={copiar}>
+                    <Button variant="ghost" size="sm" aria-label="Copiar link" className="ml-auto text-texto-fraco" onClick={copiar}>
                         {copiado ? <CheckIcon aria-hidden="true" /> : <Link2 aria-hidden="true" />}
                         {copiado ? "Copiado" : "Copiar link"}
                     </Button>
                     <ConfirmDeleteDialog
                         trigger={
-                            <Button variant="ghost" size="sm" aria-label="Excluir projeto" className="text-[#8A9098] hover:text-red-300">
+                            <Button variant="ghost" size="sm" aria-label="Excluir projeto" className="text-texto-fraco hover:text-tom-vermelho-texto">
                                 <Trash2 aria-hidden="true" />Excluir
                             </Button>
                         }
@@ -237,26 +237,26 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                             onChange={(e) => setNome(e.target.value)}
                             onBlur={sairDoNome}
                             onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-                            className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-[#E7E4DF] hover:bg-[#121518] focus-visible:bg-[#121518] focus-visible:ring-0"
+                            className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-texto hover:bg-hover focus-visible:bg-hover focus-visible:ring-0"
                         />
                         <DescricaoMarkdown valor={projeto.descricao} onGravar={(descricao) => gravar({ descricao })} />
 
-                        <section aria-label="Tarefas do projeto" className="mt-3 border-t border-[#1C1F23] pt-5">
+                        <section aria-label="Tarefas do projeto" className="mt-3 border-t border-borda pt-5">
                             <div className="flex items-center">
-                                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Tarefas</h2>
+                                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Tarefas</h2>
                                 <BotaoNovaTarefa idProjeto={projeto.id} />
                             </div>
-                            <ListaAgrupada filtros={{ idProjeto: projeto.id }} statusOptions={statusTarefa} recarga={recarga} onTrocar={trocarNaTarefa} />
+                            <ListaAgrupada filtros={{ idProjeto: projeto.id }} statusOptions={statusTarefa} recarga={recarga} onTrocar={trocarNaTarefa} mostrarProjeto={false} />
                         </section>
                     </div>
 
                     {painelRecolhido && (
-                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-[#1C1F23] bg-[#0E1012] py-1">
+                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-borda bg-superficie py-1">
                             <BotaoPainel recolhido onAlternar={() => setPainelRecolhido(false)} />
                         </div>
                     )}
                     {!painelRecolhido && (
-                    <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-3">
+                    <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-borda bg-superficie p-3">
                         <div className="-mt-1 -mr-1 flex justify-end">
                             <BotaoPainel recolhido={false} onAlternar={() => setPainelRecolhido(true)} />
                         </div>
@@ -292,12 +292,12 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
 
                         <Propriedade rotulo="Membros">
                             <button type="button" aria-label="Membros" onClick={() => setMembrosAberto(true)}
-                                className="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md px-2 py-1 text-left outline-none hover:bg-[#151A1E] focus-visible:bg-[#151A1E]">
+                                className="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md px-2 py-1 text-left outline-none hover:bg-elevado focus-visible:bg-elevado">
                                 {projeto.membros.map((m) => (
-                                    <span key={m.id} data-membro className="rounded-md border border-[#24272B] bg-[#121518] px-1.5 py-0.5 text-[11px] text-[#A9AEB4]">{m.nome}</span>
+                                    <span key={m.id} data-membro className="rounded-md border border-borda-media bg-hover px-1.5 py-0.5 text-[11px] text-texto-suave">{m.nome}</span>
                                 ))}
                                 {projeto.membros.length === 0 && (
-                                    <span className="flex items-center gap-1 text-[12.5px] text-[#5E6369]"><Users aria-hidden="true" className="size-3.5" />Adicionar</span>
+                                    <span className="flex items-center gap-1 text-[12.5px] text-placeholder"><Users aria-hidden="true" className="size-3.5" />Adicionar</span>
                                 )}
                             </button>
                         </Propriedade>

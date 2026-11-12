@@ -8,12 +8,15 @@ import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { toast } from "sonner";
 import { createLabel, deleteLabel, fetchLabels, updateLabel } from "@/fetchs/fetchLabel";
 import DialogDetailsLabel from "@/components/DialogDetailsLabel";
+import ChipLabel from "@/components/ChipLabel";
 import { formatarData } from "@/utils/formaters/fdata";
 import { ApiError } from "@/api/apiClient";
 
 export interface Label {
     id: number;
     nome: string;
+    //#RRGGBB ou null (RF-76)
+    cor: string | null;
     createdAt: string;
 }
 
@@ -37,9 +40,9 @@ const Labels = () => {
         }
     }
 
-    const criarLabel = async (nome: string) => {
+    const criarLabel = async (nome: string, cor: string) => {
         try{
-            await createLabel(nome)
+            await createLabel(nome, cor)
             toast.success("Label criada com sucesso!")
             await getDados()
         } catch(error) {
@@ -48,9 +51,9 @@ const Labels = () => {
         }
     }
 
-    const editarLabel = async (id: number, nome: string) => {
+    const editarLabel = async (id: number, nome: string, cor: string) => {
         try{
-            await updateLabel(id, nome)
+            await updateLabel(id, nome, cor)
             toast.success("Label editada com sucesso")
             await getDados()
         } catch(error) {
@@ -83,37 +86,43 @@ const Labels = () => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Labels</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2"> {labels.length} cadastrados</p>
+                <h1 className="text-2xl font-bold text-texto">Labels</h1>
+                <p className="text-sm text-texto-suave mt-2 ml-2"> {labels.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Nova Label
                 </Button>
             </div>
-            <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
+            <div className="mt-4 rounded-lg border border-texto/10 bg-superficie overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="border-white/10 hover:bg-transparent">
-                            <TableHead className="w-[100px] font-mono text-xs uppercase tracking-wide text-zinc-400">ID</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Nome</TableHead>
-                            <TableHead className="font-mono text-xs uppercase tracking-wide text-zinc-400">Criada em</TableHead>
-                            <TableHead className="text-right text-xs uppercase tracking-wide text-zinc-400">Ações</TableHead>
+                        <TableRow className="border-texto/10 hover:bg-transparent">
+                            <TableHead className="w-[100px] font-mono text-xs uppercase tracking-wide text-texto-suave">ID</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wide text-texto-suave">Nome</TableHead>
+                            <TableHead className="font-mono text-xs uppercase tracking-wide text-texto-suave">Criada em</TableHead>
+                            <TableHead className="text-right text-xs uppercase tracking-wide text-texto-suave">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {labels.map((label) => (
-                            <TableRow key={label.id} className="border-white/10 hover:bg-[#151A1E]">
-                                <TableCell className="font-mono text-zinc-500">#{label.id}</TableCell>
-                                <TableCell className="font-medium text-white">{label.nome}</TableCell>
-                                <TableCell className="font-mono text-zinc-400">{formatarData(label.createdAt)}</TableCell>
+                            <TableRow key={label.id} className="border-texto/10 hover:bg-elevado">
+                                <TableCell className="font-mono text-texto-fraco">#{label.id}</TableCell>
+                                <TableCell className="font-medium text-texto">
+                                    <span className="flex items-center gap-2">
+                                        {/* amostra da cor (RF-76); sem cor, o anel tracejado */}
+                                        <span data-amostra className={`size-3 shrink-0 rounded-full ${label.cor ? "" : "border border-dashed border-borda-forte"}`} style={label.cor ? { background: label.cor } : undefined} title={label.cor ?? "Sem cor"} />
+                                        <ChipLabel label={label} />
+                                    </span>
+                                </TableCell>
+                                <TableCell className="font-mono text-texto-suave">{formatarData(label.createdAt)}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white" onClick={() => handleDialogOpen(label)}>
+                                    <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto" onClick={() => handleDialogOpen(label)}>
                                         <Pencil className="size-4" />
                                     </Button>
 
                                     <ConfirmDeleteDialog
                                         trigger={
-                                            <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
-                                                <XIcon size={4} className="text-red-400 hover:text-red-600 transition-colors cursor-pointer" />
+                                            <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto">
+                                                <XIcon size={4} className="text-tom-vermelho-texto hover:text-marca transition-colors cursor-pointer" />
                                             </Button>
                                         }
                                         id={label.id}

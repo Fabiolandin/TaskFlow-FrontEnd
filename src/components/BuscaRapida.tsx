@@ -79,7 +79,7 @@ const BuscaRapida = ({ open, onOpenChange }: BuscaRapidaProps) => {
         if (itens.length === 0) return null;
         return (
             <div data-grupo-busca={tipo} className="py-1">
-                <p className="px-3 py-1 font-mono text-[10.5px] font-medium uppercase tracking-[.12em] text-[#61666C]">{titulo}</p>
+                <p className="px-3 py-1 font-mono text-[10.5px] font-medium uppercase tracking-[.12em] text-texto-mudo">{titulo}</p>
                 {itens.map(({ r, i }) => (
                     <button
                         key={`${r.tipo}-${r.id}`}
@@ -89,11 +89,11 @@ const BuscaRapida = ({ open, onOpenChange }: BuscaRapidaProps) => {
                         data-resultado={r.rota}
                         onMouseMove={() => setSelecionado(i)}
                         onClick={() => abrir(r)}
-                        className={`flex h-8 w-full items-center gap-2.5 rounded-md px-3 text-left text-[13px] ${i === selecionado ? "bg-[#1B1F23] text-[#E7E4DF]" : "text-[#A9AEB4]"}`}
+                        className={`flex h-8 w-full items-center gap-2.5 rounded-md px-3 text-left text-[13px] ${i === selecionado ? "bg-realce text-texto" : "text-texto-suave"}`}
                     >
                         {tipo === "tarefa"
-                            ? <SquareCheck aria-hidden="true" className="size-3.5 shrink-0 text-[#61666C]" />
-                            : <FolderKanban aria-hidden="true" className="size-3.5 shrink-0 text-[#61666C]" />}
+                            ? <SquareCheck aria-hidden="true" className="size-3.5 shrink-0 text-texto-mudo" />
+                            : <FolderKanban aria-hidden="true" className="size-3.5 shrink-0 text-texto-mudo" />}
                         <span className="truncate">{r.nome}</span>
                     </button>
                 ))}
@@ -103,11 +103,11 @@ const BuscaRapida = ({ open, onOpenChange }: BuscaRapidaProps) => {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent showCloseButton={false} data-busca-rapida className="top-[20%] w-[560px] translate-y-0 gap-0 overflow-hidden border border-[#24272B] bg-[#0E1012] p-0">
+            <DialogContent showCloseButton={false} data-busca-rapida className="top-[20%] w-[560px] translate-y-0 gap-0 overflow-hidden border border-borda-media bg-superficie p-0">
                 <DialogTitle className="sr-only">Busca rápida</DialogTitle>
                 <DialogDescription className="sr-only">Busque tarefas e projetos pelo nome</DialogDescription>
-                <div className="flex h-12 items-center gap-2.5 border-b border-[#1C1F23] px-3">
-                    <Search aria-hidden="true" className="size-4 text-[#61666C]" />
+                <div className="flex h-12 items-center gap-2.5 border-b border-borda px-3">
+                    <Search aria-hidden="true" className="size-4 text-texto-mudo" />
                     <input
                         aria-label="Buscar tarefas e projetos"
                         autoFocus
@@ -115,14 +115,14 @@ const BuscaRapida = ({ open, onOpenChange }: BuscaRapidaProps) => {
                         onChange={(e) => setTexto(e.target.value)}
                         onKeyDown={teclas}
                         placeholder="Buscar tarefas e projetos…"
-                        className="h-full flex-1 bg-transparent text-[14px] text-[#E7E4DF] outline-none placeholder:text-[#5E6369]"
+                        className="h-full flex-1 bg-transparent text-[14px] text-texto outline-none placeholder:text-placeholder"
                     />
-                    <kbd className="rounded border border-[#24272B] px-1.5 font-mono text-[10.5px] text-[#61666C]">Esc</kbd>
+                    <kbd className="rounded border border-borda-media px-1.5 font-mono text-[10.5px] text-texto-mudo">Esc</kbd>
                 </div>
                 {atuais && (
                     <div role="listbox" aria-label="Resultados" className="max-h-[360px] overflow-y-auto p-1">
                         {atuais.length === 0
-                            ? <p className="px-3 py-6 text-center text-[13px] text-[#61666C]">Nada encontrado</p>
+                            ? <p className="px-3 py-6 text-center text-[13px] text-texto-mudo">Nada encontrado</p>
                             : <>{grupo("tarefa", "Tarefas")}{grupo("projeto", "Projetos")}</>}
                     </div>
                 )}

@@ -17,8 +17,8 @@ export interface OpcoesTarefa {
 }
 
 const SEM_RESPONSAVEL = "sem-responsavel";
-const estiloSelect = "w-full h-10! rounded-md bg-[#151A1E] border-[#333B44] text-white";
-const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
+const estiloSelect = "w-full h-10! rounded-md bg-elevado border-borda-forte text-texto";
+const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
 
 interface FormularioTarefaProps extends OpcoesTarefa {
     campos: CamposTarefa;
@@ -38,20 +38,20 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
 
     return (
         <div className="flex flex-col gap-2 mt-2">
-            <p className="text-gray-400 text-[13px]">Nome da tarefa</p>
+            <p className="text-texto-suave text-[13px]">Nome da tarefa</p>
             <Input
                 aria-label="Nome da tarefa"
-                className="text-white bg-[#151A1E] border-[#333B44] h-10"
+                className="text-texto bg-elevado border-borda-forte h-10"
                 type="text"
                 placeholder="ex. Ajustar tela de login"
                 value={campos.nome}
                 onChange={(e) => onChange({ nome: e.target.value })}
             />
 
-            <p className="text-gray-400 text-[13px]">Descrição</p>
+            <p className="text-texto-suave text-[13px]">Descrição</p>
             <Textarea
                 aria-label="Descrição"
-                className="text-white bg-[#151A1E] border-[#333B44]"
+                className="text-texto bg-elevado border-borda-forte"
                 placeholder="Detalhes da tarefa"
                 value={campos.descricao}
                 onChange={(e) => onChange({ descricao: e.target.value })}
@@ -59,12 +59,12 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Projeto</p>
+                    <p className="text-texto-suave text-[13px]">Projeto</p>
                     <Select value={campos.idProjeto} onValueChange={(v) => onChange({ idProjeto: v, idUsuarioResponsavel: "" })} disabled={projetoFixo}>
                         <SelectTrigger aria-label="Projeto" className={estiloSelect}>
                             <SelectValue placeholder="Selecione o projeto" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                        <SelectContent className="bg-elevado border border-borda-forte text-texto">
                             <SelectGroup>
                                 {projetos.map((p) => (
                                     <SelectItem className={estiloItem} key={p.id} value={String(p.id)}>{p.nome}</SelectItem>
@@ -75,7 +75,7 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Responsável</p>
+                    <p className="text-texto-suave text-[13px]">Responsável</p>
                     <Select
                         value={campos.idUsuarioResponsavel || SEM_RESPONSAVEL}
                         onValueChange={(v) => onChange({ idUsuarioResponsavel: v === SEM_RESPONSAVEL ? "" : v })}
@@ -84,7 +84,7 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                         <SelectTrigger aria-label="Responsável" className={estiloSelect}>
                             <SelectValue placeholder="Sem responsável" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                        <SelectContent className="bg-elevado border border-borda-forte text-texto">
                             <SelectGroup>
                                 <SelectItem className={estiloItem} value={SEM_RESPONSAVEL}>Sem responsável</SelectItem>
                                 {membros.map((m) => (
@@ -94,17 +94,17 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                         </SelectContent>
                     </Select>
                     {campos.idProjeto && membros.length === 0 && (
-                        <p className="text-[12px] text-zinc-500">Este projeto não tem membros</p>
+                        <p className="text-[12px] text-texto-fraco">Este projeto não tem membros</p>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Status</p>
+                    <p className="text-texto-suave text-[13px]">Status</p>
                     <Select value={campos.idStatus} onValueChange={(v) => onChange({ idStatus: v })}>
                         <SelectTrigger aria-label="Status" className={estiloSelect}>
                             <SelectValue placeholder="Selecione o status" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                        <SelectContent className="bg-elevado border border-borda-forte text-texto">
                             <SelectGroup>
                                 {statusOptions.map((s) => (
                                     <SelectItem className={estiloItem} key={s.id} value={String(s.id)}>{s.nome}</SelectItem>
@@ -115,12 +115,12 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Prioridade</p>
+                    <p className="text-texto-suave text-[13px]">Prioridade</p>
                     <Select value={campos.prioridade} onValueChange={(v) => onChange({ prioridade: v })}>
                         <SelectTrigger aria-label="Prioridade" className={estiloSelect}>
                             <SelectValue placeholder="Selecione a prioridade" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+                        <SelectContent className="bg-elevado border border-borda-forte text-texto">
                             <SelectGroup>
                                 {PRIORIDADES.map((p) => (
                                     <SelectItem className={estiloItem} key={p} value={p}>{p}</SelectItem>
@@ -131,10 +131,10 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Data de início</p>
+                    <p className="text-texto-suave text-[13px]">Data de início</p>
                     <Input
                         aria-label="Data de início"
-                        className="text-gray-400 bg-[#151A1E] border-[#333B44] h-10"
+                        className="text-texto-suave bg-elevado border-borda-forte h-10"
                         type="date"
                         value={campos.dataInicio}
                         onChange={(e) => onChange({ dataInicio: e.target.value })}
@@ -142,10 +142,10 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-gray-400 text-[13px]">Prazo</p>
+                    <p className="text-texto-suave text-[13px]">Prazo</p>
                     <Input
                         aria-label="Prazo"
-                        className="text-gray-400 bg-[#151A1E] border-[#333B44] h-10"
+                        className="text-texto-suave bg-elevado border-borda-forte h-10"
                         type="date"
                         value={campos.dataFinal}
                         onChange={(e) => onChange({ dataFinal: e.target.value })}
@@ -153,12 +153,12 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                 </div>
             </div>
             {prazoAntesDoInicio(campos.dataInicio, campos.dataFinal) && (
-                <p className="text-red-400 text-[12px]">{AVISO_PRAZO}</p>
+                <p className="text-tom-vermelho-texto text-[12px]">{AVISO_PRAZO}</p>
             )}
 
-            <p className="text-gray-400 text-[13px]">Labels</p>
+            <p className="text-texto-suave text-[13px]">Labels</p>
             <div className="flex flex-row flex-wrap gap-2">
-                {labels.length === 0 && <span className="text-[12px] text-zinc-500">Nenhuma label cadastrada</span>}
+                {labels.length === 0 && <span className="text-[12px] text-texto-fraco">Nenhuma label cadastrada</span>}
                 {labels.map((label) => {
                     const selecionada = campos.labelIds.includes(label.id);
                     return (
@@ -167,7 +167,7 @@ export const FormularioTarefa = ({ campos, onChange, projetos, statusOptions, la
                             type="button"
                             aria-pressed={selecionada}
                             onClick={() => alternarLabel(label.id)}
-                            className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer ${selecionada ? "bg-[#333B44] border-white/40 text-white" : "bg-[#151A1E] border-[#333B44] text-gray-400"}`}
+                            className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer ${selecionada ? "bg-borda-forte border-texto/40 text-texto" : "bg-elevado border-borda-forte text-texto-suave"}`}
                         >
                             {label.nome}
                         </button>
@@ -210,16 +210,16 @@ const DialogNewTarefa = ({ open, onOpenChange, onCreateTarefa, inicial, titulo, 
     return (
         <div>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="bg-[#0E1012] w-[560px] max-h-[90vh] overflow-y-auto flex-col flex p-5">
+                <DialogContent className="bg-superficie w-[560px] max-h-[90vh] overflow-y-auto flex-col flex p-5">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-[17px]">{titulo ?? "Nova Tarefa"}</DialogTitle>
-                        <hr className="border-gray-600" />
+                        <DialogTitle className="text-texto text-[17px]">{titulo ?? "Nova Tarefa"}</DialogTitle>
+                        <hr className="border-texto-mudo" />
                     </DialogHeader>
 
                     <FormularioTarefa campos={campos} onChange={(p) => setCampos((c) => ({ ...c, ...p }))} projetoFixo={projetoFixo} {...opcoes} />
 
-                    <DialogFooter className="bg-[#0E1012]">
-                        <Button variant="ghost" className="text-gray-400" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <DialogFooter className="bg-superficie">
+                        <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Cancelar</Button>
                         <Button variant="destructive" onClick={handleCreate} disabled={!podeCriar}>Criar Tarefa</Button>
                     </DialogFooter>
                 </DialogContent>

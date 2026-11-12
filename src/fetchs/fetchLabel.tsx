@@ -7,10 +7,11 @@ export const fetchLabels = async () => {
     });
 }
 
-export const createLabel = async(nome: string) => {
+//cor: #RRGGBB ou "" (sem cor; a API grava null) (RF-76)
+export const createLabel = async(nome: string, cor: string = "") => {
     return apiClient(`/labels`, {
         method: "POST",
-        body: JSON.stringify({ nome }),
+        body: JSON.stringify({ nome, cor }),
     });
 }
 
@@ -20,9 +21,9 @@ export const deleteLabel = async(id: number) => {
     });
 }
 
-export const updateLabel = async(id: number, nome: string) => {
+export const updateLabel = async(id: number, nome: string, cor: string = "") => {
     return apiClient(`/labels/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ nome }),
+        body: JSON.stringify({ nome, cor }),
     });
 }

@@ -1,10 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>taskflow-fronted</title>
+    <title>Taskflow</title>
+    <!-- tema salvo aplicado antes do React, para não piscar escuro (RF-69); a chave é a de src/utils/tema.ts -->
+    <script>
+      try {
+        var tema = localStorage.getItem("taskflow:tema");
+        var claro = tema === "claro" || (tema === "sistema" && window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+        if (claro) document.documentElement.setAttribute("data-theme", "light");
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

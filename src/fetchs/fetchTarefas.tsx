@@ -11,6 +11,8 @@ export const PRIORIDADES = ["Baixa", "Média", "Alta", "Urgente"] as const;
 export interface LabelDaTarefa {
     id: number;
     nome: string;
+    //#RRGGBB ou null (RF-76, RF-32)
+    cor: string | null;
 }
 
 //tarefa como as 4 rotas devolvem (RF-32): sem `senha`, labels achatadas, responsável pode ser null

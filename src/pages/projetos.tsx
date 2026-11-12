@@ -77,8 +77,8 @@ const Projetos = () => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Projetos</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2">{resposta.total} no total</p>
+                <h1 className="text-2xl font-bold text-texto">Projetos</h1>
+                <p className="text-sm text-texto-suave mt-2 ml-2">{resposta.total} no total</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Novo Projeto
                 </Button>
@@ -86,34 +86,34 @@ const Projetos = () => {
             <div className="mt-4 p-4 grid grid-cols-3 gap-4">
                 {resposta.data.map((projeto) => (
                     <article key={projeto.id} data-projeto-id={projeto.id} onClick={() => navigate(`/projetos/${projeto.id}`)}
-                        className="flex min-h-45 cursor-pointer flex-col gap-3 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-4 transition-colors hover:border-[#2A2F35] hover:bg-[#101316]">
+                        className="flex min-h-45 cursor-pointer flex-col gap-3 rounded-lg border border-borda bg-superficie p-4 transition-colors hover:border-borda-forte hover:bg-cabecalho">
                         <div className="flex flex-row items-start justify-between gap-3">
-                            <h2 className="min-w-0 font-heading text-[16px] font-semibold tracking-[-.01em] text-[#E7E4DF]">
-                                <Link to={`/projetos/${projeto.id}`} onClick={naoPropaga} className="block truncate rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[#3A3F45]">
+                            <h2 className="min-w-0 font-heading text-[16px] font-semibold tracking-[-.01em] text-texto">
+                                <Link to={`/projetos/${projeto.id}`} onClick={naoPropaga} className="block truncate rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-foco">
                                     {projeto.nome}
                                 </Link>
                             </h2>
-                            <p className="flex shrink-0 items-center gap-1.5 text-[12px] text-[#A9AEB4]">
+                            <p className="flex shrink-0 items-center gap-1.5 text-[12px] text-texto-suave">
                                 {projeto.status.cor && <span className="inline-block size-2 rounded-full" style={{ backgroundColor: projeto.status.cor }} />}
                                 {projeto.status.nome}
                             </p>
                         </div>
 
                         {projeto.descricao && (
-                            <MarkdownTexto texto={projeto.descricao} className="line-clamp-3 max-h-[4.8em] overflow-hidden text-[13px] leading-[1.6] text-[#8A9098] [&_li]:my-0 [&_p]:my-0 [&_pre]:my-0 [&_ul]:my-0 [&_ol]:my-0" />
+                            <MarkdownTexto texto={projeto.descricao} className="line-clamp-3 max-h-[4.8em] overflow-hidden text-[13px] leading-[1.6] text-texto-fraco [&_li]:my-0 [&_p]:my-0 [&_pre]:my-0 [&_ul]:my-0 [&_ol]:my-0" />
                         )}
 
                         <Progresso progresso={projeto.progresso} />
 
                         <div className="flex flex-row flex-wrap gap-1">
-                            {projeto.membros.length === 0 && <span className="text-[11px] text-zinc-500">Sem membros</span>}
+                            {projeto.membros.length === 0 && <span className="text-[11px] text-texto-fraco">Sem membros</span>}
                             {projeto.membros.map((membro) => (
-                                <span key={membro.id} className="rounded-md border border-[#24272B] bg-[#121518] px-1.5 py-0.5 text-[11px] text-[#A9AEB4]">{membro.nome}</span>
+                                <span key={membro.id} className="rounded-md border border-borda-media bg-hover px-1.5 py-0.5 text-[11px] text-texto-suave">{membro.nome}</span>
                             ))}
                         </div>
-                        <div className="mt-auto flex flex-row items-center gap-2 border-t border-[#1C1F23] pt-2">
-                            <p className="font-mono text-[12px] text-[#7C8189]">Início: {formatarDia(projeto.data_inicio)}</p>
-                            <Button variant="ghost" size="sm" className="ml-auto text-gray-400" onClick={(e) => { naoPropaga(e); abrirMembros(projeto); }}>
+                        <div className="mt-auto flex flex-row items-center gap-2 border-t border-borda pt-2">
+                            <p className="font-mono text-[12px] text-texto-fraco">Início: {formatarDia(projeto.data_inicio)}</p>
+                            <Button variant="ghost" size="sm" className="ml-auto text-texto-suave" onClick={(e) => { naoPropaga(e); abrirMembros(projeto); }}>
                                 Membros
                             </Button>
                         </div>
@@ -122,11 +122,11 @@ const Projetos = () => {
             </div>
 
             <div className="flex flex-row items-center justify-center gap-4">
-                <Button variant="ghost" className="text-gray-400" disabled={pagina <= 1} onClick={() => getDados(pagina - 1)}>
+                <Button variant="ghost" className="text-texto-suave" disabled={pagina <= 1} onClick={() => getDados(pagina - 1)}>
                     Anterior
                 </Button>
-                <p className="text-sm text-zinc-400">Página {pagina} de {totalPaginas}</p>
-                <Button variant="ghost" className="text-gray-400" disabled={pagina >= totalPaginas} onClick={() => getDados(pagina + 1)}>
+                <p className="text-sm text-texto-suave">Página {pagina} de {totalPaginas}</p>
+                <Button variant="ghost" className="text-texto-suave" disabled={pagina >= totalPaginas} onClick={() => getDados(pagina + 1)}>
                     Próxima
                 </Button>
             </div>

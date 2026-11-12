@@ -1,7 +1,7 @@
 //barras cheias por prioridade; Urgente é o ícone de alerta (RF-43)
 const BARRAS: Record<string, number> = { Baixa: 1, "Média": 2, Alta: 3 };
-//cores da paleta (docs/raiz/DESIGN.md): Baixa cinza, Média azul, Alta âmbar, Urgente vermelho
-const CORES: Record<string, string> = { Baixa: "#8A9098", "Média": "#9BB8F0", Alta: "#E3C57F", Urgente: "#F2736C" };
+//tons do tema (SPEC-020): Baixa neutro, Média azul, Alta âmbar, Urgente vermelho
+const CORES: Record<string, string> = { Baixa: "var(--tf-tom-neutro-texto)", "Média": "var(--tf-tom-azul-texto)", Alta: "var(--tf-tom-ambar-texto)", Urgente: "var(--tf-tom-vermelho-texto)" };
 
 interface PrioridadeIconProps {
     prioridade: string;
@@ -22,14 +22,14 @@ const PrioridadeIcon = ({ prioridade, tamanho = 14, className = "" }: Prioridade
             height={tamanho}
             viewBox="0 0 14 14"
             className={`shrink-0 ${className}`}
-            style={{ color: CORES[prioridade] ?? "#8A9098" }}
+            style={{ color: CORES[prioridade] ?? "var(--tf-tom-neutro-texto)" }}
         >
             <title>{prioridade}</title>
             {urgente ? (
                 <>
                     <rect x="1" y="1" width="12" height="12" rx="3" fill="currentColor" />
-                    <rect x="6.25" y="3.4" width="1.5" height="4.8" rx="0.75" fill="#0B0C0E" />
-                    <circle cx="7" cy="10.2" r="0.95" fill="#0B0C0E" />
+                    <rect x="6.25" y="3.4" width="1.5" height="4.8" rx="0.75" style={{ fill: "var(--tf-fundo)" }} />
+                    <circle cx="7" cy="10.2" r="0.95" style={{ fill: "var(--tf-fundo)" }} />
                 </>
             ) : (
                 [4, 7, 10].map((altura, i) => (

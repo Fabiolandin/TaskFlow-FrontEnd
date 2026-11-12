@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { CheckIcon, ChevronRight, Link2, Plus } from "lucide-react";
 import Layout from "@/components/Layout";
 import StatusIcon from "@/components/StatusIcon";
-import PrioridadeIcon from "@/components/PrioridadeIcon";
+import BadgePrioridade from "@/components/BadgePrioridade";
+import Avatar from "@/components/Avatar";
 import ComentariosDaTarefa from "@/components/ComentariosDaTarefa";
 import DescricaoMarkdown from "@/components/DescricaoMarkdown";
 import SubTarefas from "@/components/SubTarefas";
@@ -25,10 +26,10 @@ import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
 import BotaoPainel from "@/components/BotaoPainel";
 
 const SEM_RESPONSAVEL = "sem-responsavel";
-const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-[#C9C5BE] hover:bg-[#151A1E] data-[state=open]:bg-[#151A1E]";
-const estiloConteudo = "bg-[#151A1E] border border-[#333B44] text-white";
-const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
-const estiloData = "h-8 w-full rounded-md border-transparent bg-transparent px-2 font-mono text-[12.5px] text-[#C9C5BE] [color-scheme:dark] hover:bg-[#151A1E] focus-visible:bg-[#151A1E]";
+const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-texto-2 hover:bg-elevado data-[state=open]:bg-elevado";
+const estiloConteudo = "bg-elevado border border-borda-forte text-texto";
+const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
+const estiloData = "h-8 w-full rounded-md border-transparent bg-transparent px-2 font-mono text-[12.5px] text-texto-2 hover:bg-elevado focus-visible:bg-elevado";
 
 //só id inteiro positivo vai à API; o resto é "não encontrada" sem pedido (RF-46, D-12)
 const idDaRota = (valor?: string) => (valor && /^[1-9]\d*$/.test(valor) ? Number(valor) : null);
@@ -37,7 +38,7 @@ type Leitura = { estado: "carregando" } | { estado: "naoEncontrada" } | { estado
 
 const Propriedade = ({ rotulo, children }: { rotulo: string; children: ReactNode }) => (
     <div className="grid min-h-9 grid-cols-[92px_minmax(0,1fr)] items-center gap-2">
-        <span className="text-[12px] text-[#7C8189]">{rotulo}</span>
+        <span className="text-[12px] text-texto-fraco">{rotulo}</span>
         <div className="min-w-0">{children}</div>
     </div>
 );
@@ -45,9 +46,9 @@ const Propriedade = ({ rotulo, children }: { rotulo: string; children: ReactNode
 const Aviso = ({ titulo, texto }: { titulo: string; texto: string }) => (
     <Layout>
         <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-            <p className="font-heading text-lg font-semibold text-[#E7E4DF]">{titulo}</p>
-            <p className="text-sm text-[#7C8189]">{texto}</p>
-            <Button asChild variant="ghost" className="text-[#8A9098]">
+            <p className="font-heading text-lg font-semibold text-texto">{titulo}</p>
+            <p className="text-sm text-texto-fraco">{texto}</p>
+            <Button asChild variant="ghost" className="text-texto-fraco">
                 <Link to="/tarefas">Voltar para Tarefas</Link>
             </Button>
         </div>
@@ -141,7 +142,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
     if (!tarefa) {
         return (
             <Layout>
-                <p className="py-24 text-center text-sm text-[#7C8189]">Carregando…</p>
+                <p className="py-24 text-center text-sm text-texto-fraco">Carregando…</p>
             </Layout>
         );
     }
@@ -245,17 +246,17 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
             <div className="mx-auto max-w-[1180px]">
                 <header className="mb-6 flex h-9 items-center gap-3">
                     <nav aria-label="Trilha" className="flex min-w-0 items-center gap-1.5 text-[13px]">
-                        <Link to={`/projetos/${tarefa.idProjeto}`} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{tarefa.projeto.nome}</Link>
-                        <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
+                        <Link to={`/projetos/${tarefa.idProjeto}`} className="truncate text-texto-fraco hover:text-texto hover:underline">{tarefa.projeto.nome}</Link>
+                        <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-placeholder" />
                         {(ancestrais.length ? ancestrais : tarefa.tarefaPai ? [tarefa.tarefaPai] : []).map((a) => (
                             <span key={a.id} className="flex min-w-0 items-center gap-1.5">
-                                <Link to={`/tarefas/${a.id}`} data-ancestral={a.id} className="truncate text-[#8A9098] hover:text-[#E7E4DF] hover:underline">{a.nome}</Link>
-                                <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-[#4E5359]" />
+                                <Link to={`/tarefas/${a.id}`} data-ancestral={a.id} className="truncate text-texto-fraco hover:text-texto hover:underline">{a.nome}</Link>
+                                <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-placeholder" />
                             </span>
                         ))}
-                        <span className="truncate text-[#C9C5BE]">{tarefa.nome}</span>
+                        <span className="truncate text-texto-2">{tarefa.nome}</span>
                     </nav>
-                    <Button variant="ghost" size="sm" aria-label="Copiar link" className="ml-auto text-[#8A9098]" onClick={copiar}>
+                    <Button variant="ghost" size="sm" aria-label="Copiar link" className="ml-auto text-texto-fraco" onClick={copiar}>
                         {copiado ? <CheckIcon aria-hidden="true" /> : <Link2 aria-hidden="true" />}
                         {copiado ? "Copiado" : "Copiar link"}
                     </Button>
@@ -269,7 +270,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                             onChange={(e) => setTitulo(e.target.value)}
                             onBlur={sairDoTitulo}
                             onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-                            className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-[#E7E4DF] hover:bg-[#121518] focus-visible:bg-[#121518] focus-visible:ring-0"
+                            className="-mx-2 h-11 border-transparent bg-transparent px-2 font-heading text-[22px]! font-semibold tracking-[-.02em] text-texto hover:bg-hover focus-visible:bg-hover focus-visible:ring-0"
                         />
                         <DescricaoMarkdown valor={tarefa.descricao} onGravar={(descricao) => gravar({ descricao })} />
                         <SubTarefas tarefa={tarefa} statusOptions={statusOptions} />
@@ -277,12 +278,12 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                     </div>
 
                     {painelRecolhido && (
-                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-[#1C1F23] bg-[#0E1012] py-1">
+                        <div data-painel-recolhido className="flex justify-center rounded-lg border border-borda bg-superficie py-1">
                             <BotaoPainel recolhido onAlternar={() => setPainelRecolhido(false)} />
                         </div>
                     )}
                     {!painelRecolhido && (
-                    <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-[#1C1F23] bg-[#0E1012] p-3">
+                    <aside data-coluna="propriedades" className="flex flex-col gap-0.5 rounded-lg border border-borda bg-superficie p-3">
                         <div className="-mt-1 -mr-1 flex justify-end">
                             <BotaoPainel recolhido={false} onAlternar={() => setPainelRecolhido(true)} />
                         </div>
@@ -307,7 +308,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                                 <SelectContent className={estiloConteudo}>
                                     <SelectGroup>
                                         {PRIORIDADES.map((p) => (
-                                            <SelectItem className={estiloItem} key={p} value={p}><PrioridadeIcon prioridade={p} />{p}</SelectItem>
+                                            <SelectItem className={estiloItem} key={p} value={p}><BadgePrioridade prioridade={p} /></SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
@@ -321,7 +322,7 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                                     <SelectGroup>
                                         <SelectItem className={estiloItem} value={SEM_RESPONSAVEL}>Sem responsável</SelectItem>
                                         {membros.map((m) => (
-                                            <SelectItem className={estiloItem} key={m.id} value={String(m.id)}>{m.nome}</SelectItem>
+                                            <SelectItem className={estiloItem} key={m.id} value={String(m.id)}><Avatar usuario={m} tamanho={20} />{m.nome}</SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
@@ -358,17 +359,17 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                         <Propriedade rotulo="Labels">
                             <DropdownMenu open={labelsAberto} onOpenChange={abrirLabels}>
                                 <DropdownMenuTrigger asChild>
-                                    <button type="button" aria-label="Labels" className="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md px-2 py-1 text-left outline-none hover:bg-[#151A1E] focus-visible:bg-[#151A1E] data-[state=open]:bg-[#151A1E]">
+                                    <button type="button" aria-label="Labels" className="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md px-2 py-1 text-left outline-none hover:bg-elevado focus-visible:bg-elevado data-[state=open]:bg-elevado">
                                         {labelsNaTela.map((l) => (
-                                            <span key={l.id} data-label className="rounded-md border border-[#24272B] bg-[#121518] px-1.5 py-0.5 text-[11px] text-[#A9AEB4]">{l.nome}</span>
+                                            <span key={l.id} data-label className="rounded-md border border-borda-media bg-hover px-1.5 py-0.5 text-[11px] text-texto-suave">{l.nome}</span>
                                         ))}
                                         {labelsNaTela.length === 0 && (
-                                            <span className="flex items-center gap-1 text-[12.5px] text-[#5E6369]"><Plus aria-hidden="true" className="size-3.5" />Adicionar</span>
+                                            <span className="flex items-center gap-1 text-[12.5px] text-placeholder"><Plus aria-hidden="true" className="size-3.5" />Adicionar</span>
                                         )}
                                     </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    {labels.length === 0 && <p className="px-2 py-1.5 text-[12px] text-[#61666C]">Nenhuma label cadastrada</p>}
+                                    {labels.length === 0 && <p className="px-2 py-1.5 text-[12px] text-texto-mudo">Nenhuma label cadastrada</p>}
                                     {labels.map((l) => (
                                         <DropdownMenuCheckboxItem key={l.id} checked={(labelsMarcadas ?? idsGravados).includes(l.id)}
                                             onCheckedChange={() => alternarLabel(l.id)} onSelect={(e) => e.preventDefault()}>

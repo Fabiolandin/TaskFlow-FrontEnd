@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import Avatar from "./Avatar";
+import { fetchUsuario } from "@/fetchs/fetchUsuarios";
+import { resolverTema, TEMAS, useTema } from "@/utils/tema";
 import { useAuth } from "@/context/AuthContext";
 import { PREF_MENU_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
-import { ChevronRight, LogOutIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { CheckIcon, ChevronRight, LogOutIcon, Moon, PanelLeftClose, PanelLeftOpen, Sun } from "lucide-react";
 
 interface ItemMenu {
     to: string;
@@ -32,21 +34,51 @@ const GLIFO_CADASTROS = "録";
 
 //cada tela monta o próprio Layout: a escolha de abrir/recolher Cadastros fica aqui enquanto a aba estiver aberta
 let cadastrosAberto = true;
+//nome e email do logado, lidos uma vez por id (cada tela monta o próprio menu)
+const cacheUsuario = new Map<number, { id: number; nome: string; email: string }>();
 
-const base = "flex h-8 items-center rounded-md text-[13.5px] font-medium transition-colors";
-const cores = (ativo: boolean) => (ativo ? "bg-[#171A1E] text-[#E7E4DF]" : "text-[#8A9098] hover:bg-[#131619] hover:text-[#E7E4DF]");
-const classeGlifo = "w-4 shrink-0 text-center text-[13px] text-[#61666C]";
+const base = "flex h-9 items-center rounded-controle text-[13.5px] font-medium transition-colors";
+const cores = (ativo: boolean) => (ativo ? "bg-ativo text-texto" : "text-texto-fraco hover:bg-hover hover:text-texto");
+const classeGlifo = "w-4 shrink-0 text-center text-[13px] text-texto-mudo";
+//glifo do item ativo na cor de destaque da marca (RF-73)
+const classeGlifoAtivo = (ativo: boolean) => `w-4 shrink-0 text-center text-[13px] ${ativo ? "text-marca-destaque" : "text-texto-mudo"}`;
+const botaoRodape = "flex size-[26px] shrink-0 items-center justify-center rounded-[7px] border border-borda-forte text-texto-fraco outline-none hover:bg-hover hover:text-texto focus-visible:ring-2 focus-visible:ring-foco data-[state=open]:bg-hover";
+
+//peça de mahjong com o 中 (RF-73); no trilho, menor
+const Peca = ({ pequena }: { pequena?: boolean }) => (
+    <span aria-hidden="true" data-peca
+        className={`flex shrink-0 items-center justify-center border border-peca-borda font-heading font-bold leading-none text-marca ${pequena ? "h-9 w-[27px] rounded-[5px] text-[19px]" : "h-[50px] w-[38px] rounded-[6px] text-[26px]"}`}
+        style={{ background: "linear-gradient(170deg, var(--tf-peca-1), var(--tf-peca-2))", boxShadow: "0 3px 0 var(--tf-peca-sombra), 0 6px 14px rgba(0, 0, 0, .5)" }}>
+        中
+    </span>
+);
 
 const Item = ({ to, rotulo, glifo, end, recolhido, recuado }: ItemMenu & { recolhido: boolean; recuado?: boolean }) => (
     <NavLink to={to} end={end} aria-label={recolhido ? rotulo : undefined} title={recolhido ? rotulo : undefined}
         className={({ isActive }) => `${base} ${cores(isActive)} ${recolhido ? "w-8 justify-center" : `gap-2.5 px-2.5 ${recuado ? "pl-7" : ""}`}`}>
-        <span aria-hidden="true" className={classeGlifo}>{glifo}</span>
-        {!recolhido && rotulo}
+        {({ isActive }) => (
+            <>
+                <span aria-hidden="true" className={classeGlifoAtivo(isActive)}>{glifo}</span>
+                {!recolhido && rotulo}
+            </>
+        )}
     </NavLink>
 );
 
 export default function Sidebar() {
-    const { logout } = useAuth();
+    const { logout, usuario } = useAuth();
+    const [tema, mudarTema] = useTema();
+    const idLogado = usuario?.id;
+    const [eu, setEu] = useState(() => (idLogado ? cacheUsuario.get(idLogado) ?? null : null));
+    //sem nome e email (falha na leitura), o cartão mostra só o botão Sair (RF-73)
+    useEffect(() => {
+        if (!idLogado || cacheUsuario.has(idLogado)) return;
+        let ativo = true;
+        fetchUsuario(idLogado)
+            .then((u) => { cacheUsuario.set(idLogado, u); if (ativo) setEu(u); })
+            .catch(() => { /* o cartão fica só com o Sair */ });
+        return () => { ativo = false };
+    }, [idLogado]);
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const [recolhido, setRecolhido] = usePreferencia(PREF_MENU_RECOLHIDO, false);
@@ -67,27 +99,33 @@ export default function Sidebar() {
     const botaoRecolher = (
         <button type="button" onClick={() => setRecolhido(!recolhido)}
             aria-label={recolhido ? "Expandir menu" : "Recolher menu"} title={recolhido ? "Expandir menu" : "Recolher menu"}
-            className="flex size-7 shrink-0 items-center justify-center rounded-md text-[#61666C] hover:bg-[#131619] hover:text-[#E7E4DF]">
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-texto-mudo hover:bg-hover hover:text-texto">
             {recolhido ? <PanelLeftOpen aria-hidden="true" className="size-4" /> : <PanelLeftClose aria-hidden="true" className="size-4" />}
         </button>
     );
 
     return (
         <aside data-menu={recolhido ? "recolhido" : "expandido"}
-            className={`flex h-screen shrink-0 flex-col border-r border-[#1C1F23] bg-[#0E1012] py-3 text-white transition-[width] ${recolhido ? "w-14 items-center px-2" : "w-60 px-3"}`}>
+            className={`flex h-screen shrink-0 flex-col border-r border-borda bg-superficie py-4 text-texto transition-[width] ${recolhido ? "w-14 items-center px-2" : "w-60 px-3"}`}>
             {recolhido ? (
-                <div className="mb-6 flex flex-col items-center gap-2">{botaoRecolher}</div>
+                <div className="mb-6 flex flex-col items-center gap-3">
+                    <Link to="/" aria-label="Taskflow, Painel" title="Taskflow"><Peca pequena /></Link>
+                    {botaoRecolher}
+                </div>
             ) : (
-                <div className="mb-6 flex items-center gap-1">
-                    <Link to="/" className="flex min-w-0 items-center gap-2 rounded-md px-2.5 py-2 text-zinc-400 hover:text-white">
-                        <span className="font-heading text-[17px] font-bold tracking-[-.02em] text-[#E7E4DF]">Taskflow</span>
-                        <span className="truncate text-[12px] text-[#61666C]">Dragão vermelho</span>
+                <div className="mb-6 flex items-center gap-1 pl-1 pt-1">
+                    <Link to="/" className="flex min-w-0 items-center gap-[11px] rounded-controle outline-none focus-visible:ring-2 focus-visible:ring-foco">
+                        <Peca />
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="font-heading text-[19px] font-bold tracking-[-.02em] text-texto">Taskflow</span>
+                            <span className="truncate font-mono text-[10px] uppercase tracking-[.14em] text-texto-mudo">Dragão vermelho</span>
+                        </span>
                     </Link>
-                    <span className="ml-auto">{botaoRecolher}</span>
+                    <span className="ml-auto self-start">{botaoRecolher}</span>
                 </div>
             )}
 
-            <nav aria-label="Menu principal" className={`flex h-full flex-col gap-0.5 ${recolhido ? "items-center" : ""}`}>
+            <nav aria-label="Menu principal" className={`flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto ${recolhido ? "items-center" : ""}`}>
                 {SOLTOS.map((item) => <Item key={item.to} {...item} recolhido={recolhido} />)}
 
                 {recolhido ? (
@@ -113,7 +151,7 @@ export default function Sidebar() {
                         <CollapsibleTrigger data-cadastros className={`${base} ${cores(false)} w-full gap-2.5 px-2.5`}>
                             <span aria-hidden="true" className={classeGlifo}>{GLIFO_CADASTROS}</span>
                             Cadastros
-                            <ChevronRight aria-hidden="true" className={`ml-auto size-3.5 text-[#61666C] transition-transform ${aberto ? "rotate-90" : ""}`} />
+                            <ChevronRight aria-hidden="true" className={`ml-auto size-3.5 text-texto-mudo transition-transform ${aberto ? "rotate-90" : ""}`} />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-0.5 flex flex-col gap-0.5">
                             {CADASTROS.map((item) => <Item key={item.to} {...item} recolhido={false} recuado />)}
@@ -121,12 +159,36 @@ export default function Sidebar() {
                     </Collapsible>
                 )}
 
-                <Button variant="link" onClick={handleLogout} aria-label={recolhido ? "Sair" : undefined} title={recolhido ? "Sair" : undefined}
-                    className={`mt-auto gap-3 text-red-400 hover:text-red-300 ${recolhido ? "justify-center px-0" : "justify-start"}`}>
-                    <LogOutIcon size={18} className="shrink-0" />
-                    {!recolhido && <span className="text-sm font-medium">Sair</span>}
-                </Button>
             </nav>
+
+            {/* rodapé: usuário logado, tema e sair (RF-73, RF-69) */}
+            <div data-rodape-menu className={`mt-3 flex items-center gap-2.5 ${recolhido ? "flex-col" : "rounded-cartao border border-borda bg-hover p-2.5"}`}>
+                {eu && <Avatar usuario={eu} tamanho={30} quadrado />}
+                {eu && !recolhido && (
+                    <span className="flex min-w-0 flex-col">
+                        <span data-usuario-nome className="truncate text-[12.5px] font-medium text-texto">{eu.nome}</span>
+                        <span data-usuario-email className="truncate text-[10.5px] text-texto-mudo">{eu.email}</span>
+                    </span>
+                )}
+                <span className={`flex gap-1.5 ${recolhido ? "flex-col" : "ml-auto"}`}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger aria-label="Tema" title="Tema" className={botaoRodape}>
+                            {resolverTema(tema) === "claro" ? <Sun aria-hidden="true" className="size-3.5" /> : <Moon aria-hidden="true" className="size-3.5" />}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side={recolhido ? "right" : "top"} align="end">
+                            {TEMAS.map((t) => (
+                                <DropdownMenuItem key={t.valor} data-tema={t.valor} onSelect={() => mudarTema(t.valor)}>
+                                    {t.rotulo}
+                                    {t.valor === tema && <CheckIcon aria-hidden="true" className="ml-auto size-4 text-texto-fraco" />}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <button type="button" onClick={handleLogout} aria-label="Sair" title="Sair" className={botaoRodape}>
+                        <LogOutIcon aria-hidden="true" className="size-3.5" />
+                    </button>
+                </span>
+            </div>
         </aside>
     );
 }

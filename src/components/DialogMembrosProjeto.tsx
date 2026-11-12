@@ -81,16 +81,16 @@ const DialogMembrosProjeto = ({ open, onOpenChange, projeto }: DialogMembrosProj
     return (
         <div>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="bg-[#0E1012] w-[500px] flex-col flex p-5">
+                <DialogContent className="bg-superficie w-[500px] flex-col flex p-5">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-[17px]">Membros — {projeto?.nome}</DialogTitle>
-                        <DialogDescription className="text-gray-400 text-[13px]">
+                        <DialogTitle className="text-texto text-[17px]">Membros — {projeto?.nome}</DialogTitle>
+                        <DialogDescription className="text-texto-suave text-[13px]">
                             Clique num usuário para adicionar ou remover. Cada clique é gravado na hora.
                         </DialogDescription>
-                        <hr className="border-gray-600" />
+                        <hr className="border-texto-mudo" />
                     </DialogHeader>
                     <div className="flex flex-row flex-wrap gap-2">
-                        {!carregado && <span className="text-[11px] text-zinc-500">Carregando…</span>}
+                        {!carregado && <span className="text-[11px] text-texto-fraco">Carregando…</span>}
                         {carregado && usuarios.map((usuario) => {
                             const selecionado = membros.includes(usuario.id);
                             const pendente = pendentes.includes(usuario.id);
@@ -101,7 +101,7 @@ const DialogMembrosProjeto = ({ open, onOpenChange, projeto }: DialogMembrosProj
                                     aria-pressed={selecionado}
                                     disabled={pendente}
                                     onClick={() => alternarMembro(usuario.id)}
-                                    className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer disabled:opacity-50 disabled:cursor-wait ${selecionado ? "bg-[#333B44] border-white/40 text-white" : "bg-[#151A1E] border-[#333B44] text-gray-400"}`}
+                                    className={`text-[11px] rounded-md border px-2 py-1 cursor-pointer disabled:opacity-50 disabled:cursor-wait ${selecionado ? "bg-borda-forte border-texto/40 text-texto" : "bg-elevado border-borda-forte text-texto-suave"}`}
                                 >
                                     {usuario.nome}
                                 </button>
@@ -109,8 +109,8 @@ const DialogMembrosProjeto = ({ open, onOpenChange, projeto }: DialogMembrosProj
                         })}
                     </div>
 
-                    <DialogFooter className="bg-[#0E1012]">
-                        <Button variant="ghost" className="text-gray-400" onClick={() => onOpenChange(false)}>Fechar</Button>
+                    <DialogFooter className="bg-superficie">
+                        <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Fechar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

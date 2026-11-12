@@ -29,7 +29,7 @@ const StatusIcon = ({ status, todos, tamanho = 14, className = "" }: StatusIconP
             {forma === "check" ? (
                 <>
                     <circle cx="7" cy="7" r="6.25" fill="currentColor" />
-                    <path d="M4.3 7.2 6.2 9.1 9.8 5" fill="none" stroke="#0B0C0E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4.3 7.2 6.2 9.1 9.8 5" fill="none" style={{ stroke: "var(--tf-fundo)" }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </>
             ) : (
                 <>

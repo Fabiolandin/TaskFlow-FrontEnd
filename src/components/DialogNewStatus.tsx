@@ -39,32 +39,32 @@ const DialogNewStatus = ({ open, onOpenChange, titulo, onCreateStatus }: DialogN
     return (
         <div>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="bg-[#0E1012] w-[500px] flex-col flex p-5">
+                <DialogContent className="bg-superficie w-[500px] flex-col flex p-5">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-[17px]">
+                        <DialogTitle className="text-texto text-[17px]">
                             {titulo}
                         </DialogTitle>
                     </DialogHeader>
 
-                    <p className="text-gray-400 text-[13px]">Nome</p>
+                    <p className="text-texto-suave text-[13px]">Nome</p>
                     <Input
-                    className="text-white bg-[#151A1E] border-[#333B44] mb-2 h-10"
+                    className="text-texto bg-elevado border-borda-forte mb-2 h-10"
                     type="text"
                     placeholder="ex . Em andamento"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                     />
 
-                    <p className="text-gray-400 text-[13px]">Cor</p>
+                    <p className="text-texto-suave text-[13px]">Cor</p>
                     <SeletorCor valor={cor} onChange={setCor} />
 
-                    <label className="flex items-center gap-2 text-gray-400 text-[13px] mb-2">
+                    <label className="flex items-center gap-2 text-texto-suave text-[13px] mb-2">
                         <input type="checkbox" checked={isFinal} onChange={(e) => setIsFinal(e.target.checked)} />
                         Encerrado (isFinal): conta como concluído
                     </label>
 
-                    <DialogFooter className="bg-[#0E1012]">
-                        <Button variant="ghost" className="text-gray-400" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <DialogFooter className="bg-superficie">
+                        <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Cancelar</Button>
                         <Button
                         variant="destructive"
                         onClick={handleCreateStatus}

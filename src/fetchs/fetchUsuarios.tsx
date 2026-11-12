@@ -30,3 +30,9 @@ export const updateUsuario = async(id: number, nome: string, email: string, senh
         body: JSON.stringify(body),
     });
 }
+//um usuário (id, nome, email; nunca a senha): o cartão do menu lê o logado daqui (RF-73)
+export const fetchUsuario = async (id: number) => {
+    return apiClient<Pick<Usuario, "id" | "nome" | "email">>(`/usuarios/${id}`, {
+        method: "GET",
+    });
+}

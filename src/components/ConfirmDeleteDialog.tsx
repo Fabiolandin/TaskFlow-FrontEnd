@@ -15,17 +15,17 @@ const ConfirmDeleteDialog = ({ trigger, id, titulo, descricao, funcao}: ConfirmD
             <AlertDialogTrigger asChild>
                 {trigger}
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-[#0E1012] p-5">
+            <AlertDialogContent className="bg-superficie p-5">
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white text-[17px]">Tem certeza que deseja deletar #{id} {titulo}?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-texto text-[17px]">Tem certeza que deseja deletar #{id} {titulo}?</AlertDialogTitle>
                     <AlertDialogDescription>
                         Ao clicar em deletar o {descricao} será excluido permanentemente
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter className="bg-[#0E1012]">
-                    <AlertDialogCancel className="text-gray-400 ">Cancelar</AlertDialogCancel>
+                <AlertDialogFooter className="bg-superficie">
+                    <AlertDialogCancel className="text-texto-suave ">Cancelar</AlertDialogCancel>
                     <AlertDialogAction
-                        className="bg-red-400 hover:bg-red-500"
+                        className="bg-tom-vermelho-texto hover:bg-tom-vermelho-texto"
                         onClick={funcao}
                     >Deletar</AlertDialogAction>
                 </AlertDialogFooter>

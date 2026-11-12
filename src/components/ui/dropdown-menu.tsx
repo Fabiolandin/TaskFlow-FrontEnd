@@ -30,7 +30,7 @@ function DropdownMenuContent({
         sideOffset={sideOffset}
         align={align}
         className={cn(
-          "z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-44 overflow-y-auto rounded-lg border border-[#2C3036] bg-[#151A1E] p-1 text-[#E7E4DF] shadow-[0_12px_40px_rgba(0,0,0,.55)]",
+          "z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-44 overflow-y-auto rounded-lg border border-borda-media bg-elevado p-1 text-texto shadow-flutuante",
           className
         )}
         {...props}
@@ -40,7 +40,7 @@ function DropdownMenuContent({
 }
 
 const estiloItem =
-  "relative flex h-8 w-full cursor-default items-center gap-2 rounded-md px-2 text-[13px] text-[#A9AEB4] outline-none select-none data-highlighted:bg-[#22272C] data-highlighted:text-white data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0"
+  "relative flex h-8 w-full cursor-default items-center gap-2 rounded-md px-2 text-[13px] text-texto-suave outline-none select-none data-highlighted:bg-realce data-highlighted:text-texto data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:shrink-0"
 
 function DropdownMenuItem({
   className,
@@ -76,10 +76,24 @@ function DropdownMenuCheckboxItem({
   )
 }
 
+function DropdownMenuSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
+  return (
+    <DropdownMenuPrimitive.Separator
+      data-slot="dropdown-menu-separator"
+      className={cn("-mx-1 my-1 h-px bg-borda-media", className)}
+      {...props}
+    />
+  )
+}
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
 }

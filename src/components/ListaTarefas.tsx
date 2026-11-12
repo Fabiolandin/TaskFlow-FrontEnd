@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import LinhaTarefa from "./LinhaTarefa";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import LinhaTarefa, { CabecalhoTarefas } from "./LinhaTarefa";
+import { contarColunas } from "@/utils/colunasTarefa";
 import type { Status } from "@/fetchs/fetchStatus";
 import type { DadosEdicaoTarefa, Tarefa } from "@/fetchs/fetchTarefas";
 
@@ -16,28 +17,20 @@ interface ListaTarefasProps {
     vazio?: string;
 }
 
-const estiloCabecalho = "h-9 font-mono text-[10.5px] font-medium uppercase tracking-[.12em] text-[#6E7379]";
-
 //tabela de tarefas + paginação, para a tela de Tarefas e a de Minhas Tarefas (SPEC-007); a linha é a do RF-44
 const ListaTarefas = ({ tarefas, pagina, totalPaginas, onPagina, statusOptions, onTrocar, vazio = "Nenhuma tarefa encontrada" }: ListaTarefasProps) => {
     return (
         <>
-                <div className="mt-4 rounded-lg border border-[#1C1F23] bg-[#0E1012] overflow-hidden">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="border-[#14171A] bg-[#101316] hover:bg-[#101316]">
-                                <TableHead className={estiloCabecalho}>Nome</TableHead>
-                                <TableHead className={estiloCabecalho}>Status</TableHead>
-                                <TableHead className={estiloCabecalho}>Prioridade</TableHead>
-                                <TableHead className={estiloCabecalho}>Responsável</TableHead>
-                                <TableHead className={estiloCabecalho}>Projeto</TableHead>
-                                <TableHead className={estiloCabecalho}>Prazo</TableHead>
-                            </TableRow>
+                <div className="mt-4 overflow-clip rounded-cartao border border-borda bg-superficie">
+                    <Table containerClassName="overflow-x-clip">
+                        {/* cabeçalho preso no topo da área que rola (RF-72) */}
+                        <TableHeader className="sticky -top-6 z-10 bg-cabecalho">
+                            <CabecalhoTarefas />
                         </TableHeader>
                         <TableBody>
                             {tarefas.length === 0 && (
-                                <TableRow className="border-[#14171A] hover:bg-transparent">
-                                    <TableCell colSpan={6} className="text-center text-zinc-500">{vazio}</TableCell>
+                                <TableRow className="border-divisoria hover:bg-transparent">
+                                    <TableCell colSpan={contarColunas({})} className="text-center text-texto-fraco">{vazio}</TableCell>
                                 </TableRow>
                             )}
                             {tarefas.map((tarefa) => (
@@ -48,11 +41,11 @@ const ListaTarefas = ({ tarefas, pagina, totalPaginas, onPagina, statusOptions, 
                 </div>
 
                 <div className="flex flex-row items-center justify-center gap-4 mt-4">
-                    <Button variant="ghost" className="text-gray-400" disabled={pagina <= 1} onClick={() => onPagina(pagina - 1)}>
+                    <Button variant="ghost" className="text-texto-suave" disabled={pagina <= 1} onClick={() => onPagina(pagina - 1)}>
                         Anterior
                     </Button>
-                    <p className="text-sm text-zinc-400">Página {pagina} de {totalPaginas}</p>
-                    <Button variant="ghost" className="text-gray-400" disabled={pagina >= totalPaginas} onClick={() => onPagina(pagina + 1)}>
+                    <p className="text-sm text-texto-suave">Página {pagina} de {totalPaginas}</p>
+                    <Button variant="ghost" className="text-texto-suave" disabled={pagina >= totalPaginas} onClick={() => onPagina(pagina + 1)}>
                         Próxima
                     </Button>
                 </div>

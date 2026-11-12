@@ -32,27 +32,27 @@ const SubTarefas = ({ tarefa, statusOptions }: SubTarefasProps) => {
     const concluidas = filhas?.filter((f) => f.status.isFinal).length ?? 0;
 
     return (
-        <section aria-label="Sub-tarefas" data-subtarefas-secao className="mt-2 border-t border-[#1C1F23] pt-4">
+        <section aria-label="Sub-tarefas" data-subtarefas-secao className="mt-2 border-t border-borda pt-4">
             <div className="flex items-center gap-2">
-                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-[#6E7379]">Sub-tarefas</h2>
+                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Sub-tarefas</h2>
                 {filhas && filhas.length > 0 && (
-                    <span data-contagem className="font-mono text-[11px] text-[#8A9098]">{concluidas}/{filhas.length}</span>
+                    <span data-contagem className="font-mono text-[11px] text-texto-fraco">{concluidas}/{filhas.length}</span>
                 )}
-                <Button variant="ghost" size="sm" className="ml-auto text-[#8A9098]"
+                <Button variant="ghost" size="sm" className="ml-auto text-texto-fraco"
                     onClick={() => abrir({ idProjeto: tarefa.idProjeto, tarefaPai: { id: tarefa.id, nome: tarefa.nome } })}>
                     <Plus aria-hidden="true" />Adicionar sub-tarefa
                 </Button>
             </div>
             {filhas && filhas.length > 0 && (
-                <ul className="mt-2 flex flex-col rounded-lg border border-[#1C1F23] bg-[#0E1012]">
+                <ul className="mt-2 flex flex-col rounded-lg border border-borda bg-superficie">
                     {filhas.map((f) => (
-                        <li key={f.id} data-subtarefa-id={f.id} className="flex h-9 items-center gap-2 border-b border-[#14171A] px-3 last:border-b-0">
+                        <li key={f.id} data-subtarefa-id={f.id} className="flex h-9 items-center gap-2 border-b border-divisoria px-3 last:border-b-0">
                             <StatusIcon status={f.status} todos={statusOptions} />
-                            <Link to={`/tarefas/${f.id}`} className="min-w-0 flex-1 truncate text-[13px] text-[#E7E4DF] hover:underline">{f.nome}</Link>
+                            <Link to={`/tarefas/${f.id}`} className="min-w-0 flex-1 truncate text-[13px] text-texto hover:underline">{f.nome}</Link>
                             {f.subtarefas.total > 0 && (
-                                <span className="font-mono text-[10.5px] text-[#8A9098]">{f.subtarefas.concluidas}/{f.subtarefas.total}</span>
+                                <span className="font-mono text-[10.5px] text-texto-fraco">{f.subtarefas.concluidas}/{f.subtarefas.total}</span>
                             )}
-                            <span className="shrink-0 text-[12px] text-[#7C8189]">{f.responsavel?.nome ?? "Sem responsável"}</span>
+                            <span className="shrink-0 text-[12px] text-texto-fraco">{f.responsavel?.nome ?? "Sem responsável"}</span>
                         </li>
                     ))}
                 </ul>

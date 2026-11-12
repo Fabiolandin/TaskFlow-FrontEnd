@@ -8,6 +8,53 @@
     --font-heading: 'Space Grotesk', sans-serif;
     --font-sans: 'IBM Plex Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
+    /* tokens do tema como utilitários: bg-fundo, text-texto-fraco, border-borda… (RF-68) */
+    --color-fundo: var(--tf-fundo);
+    --color-superficie: var(--tf-superficie);
+    --color-elevado: var(--tf-elevado);
+    --color-cabecalho: var(--tf-cabecalho);
+    --color-hover: var(--tf-hover);
+    --color-ativo: var(--tf-ativo);
+    --color-realce: var(--tf-realce);
+    --color-divisoria: var(--tf-divisoria);
+    --color-borda: var(--tf-borda);
+    --color-borda-media: var(--tf-borda-media);
+    --color-borda-forte: var(--tf-borda-forte);
+    --color-rolagem: var(--tf-rolagem);
+    --color-foco: var(--tf-foco);
+    --color-texto: var(--tf-texto);
+    --color-texto-2: var(--tf-texto-2);
+    --color-texto-suave: var(--tf-texto-suave);
+    --color-texto-fraco: var(--tf-texto-fraco);
+    --color-texto-mudo: var(--tf-texto-mudo);
+    --color-placeholder: var(--tf-placeholder);
+    --color-marca: var(--tf-marca);
+    --color-marca-texto: var(--tf-marca-texto);
+    --color-marca-destaque: var(--tf-marca-destaque);
+    --color-peca-1: var(--tf-peca-1);
+    --color-peca-2: var(--tf-peca-2);
+    --color-peca-borda: var(--tf-peca-borda);
+    --color-peca-sombra: var(--tf-peca-sombra);
+    --color-status-reserva: var(--tf-status-reserva);
+    --color-tom-vermelho-texto: var(--tf-tom-vermelho-texto);
+    --color-tom-vermelho-fundo: var(--tf-tom-vermelho-fundo);
+    --color-tom-ambar-texto: var(--tf-tom-ambar-texto);
+    --color-tom-ambar-fundo: var(--tf-tom-ambar-fundo);
+    --color-tom-azul-texto: var(--tf-tom-azul-texto);
+    --color-tom-azul-fundo: var(--tf-tom-azul-fundo);
+    --color-tom-verde-texto: var(--tf-tom-verde-texto);
+    --color-tom-verde-fundo: var(--tf-tom-verde-fundo);
+    --color-tom-rosa-texto: var(--tf-tom-rosa-texto);
+    --color-tom-rosa-fundo: var(--tf-tom-rosa-fundo);
+    --color-tom-laranja-texto: var(--tf-tom-laranja-texto);
+    --color-tom-laranja-fundo: var(--tf-tom-laranja-fundo);
+    --color-tom-neutro-texto: var(--tf-tom-neutro-texto);
+    --color-tom-neutro-fundo: var(--tf-tom-neutro-fundo);
+    --radius-badge: var(--tf-raio-badge);
+    --radius-chip: var(--tf-raio-chip);
+    --radius-controle: var(--tf-raio-controle);
+    --radius-cartao: var(--tf-raio-cartao);
+    --shadow-flutuante: var(--tf-sombra-flutuante);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,74 +95,148 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Tokens de tema (SPEC-020, RF-68/RF-69). Fonte da verdade: docs/raiz/DESIGN.md.
+   Escuro é o padrão (:root); o claro vale com data-theme="light" no <html>. */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --tf-fundo: #0B0C0E;
+    --tf-superficie: #0E1012;
+    --tf-elevado: #151A1E;
+    --tf-cabecalho: #101316;
+    --tf-hover: #131619;
+    --tf-ativo: #171A1E;
+    --tf-realce: #22272C;
+    --tf-divisoria: #14171A;
+    --tf-borda: #1C1F23;
+    --tf-borda-media: #24272B;
+    --tf-borda-forte: #333B44;
+    --tf-rolagem: #24272B;
+    --tf-foco: #3A3F45;
+    --tf-texto: #E7E4DF;
+    --tf-texto-2: #C9C5BE;
+    --tf-texto-suave: #A9AEB4;
+    --tf-texto-fraco: #8A9098;
+    --tf-texto-mudo: #61666C;
+    --tf-placeholder: #5E6369;
+    --tf-marca: #C8202B;
+    --tf-marca-texto: #FFF3F0;
+    --tf-marca-destaque: #E0433F;
+    --tf-peca-1: #FBF7EE;
+    --tf-peca-2: #DCD5C4;
+    --tf-peca-borda: #B9AF98;
+    --tf-peca-sombra: #9C9382;
+    --tf-status-reserva: #6E7379;
+    --tf-tom-vermelho-texto: #F2736C;
+    --tf-tom-vermelho-fundo: #341E1D;
+    --tf-tom-ambar-texto: #E3C57F;
+    --tf-tom-ambar-fundo: #2E2718;
+    --tf-tom-azul-texto: #9BB8F0;
+    --tf-tom-azul-fundo: #1B2334;
+    --tf-tom-verde-texto: #7FD1A6;
+    --tf-tom-verde-fundo: #172A22;
+    --tf-tom-rosa-texto: #E9A7D6;
+    --tf-tom-rosa-fundo: #2E1F2A;
+    --tf-tom-laranja-texto: #F0A88A;
+    --tf-tom-laranja-fundo: #3B2A22;
+    --tf-tom-neutro-texto: #8A9098;
+    --tf-tom-neutro-fundo: #1B1E22;
+    --tf-sombra-flutuante: 0 8px 24px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+
+    /* variáveis do shadcn apontando para os tokens (RF-68) */
+    --background: var(--tf-fundo);
+    --foreground: var(--tf-texto);
+    --card: var(--tf-superficie);
+    --card-foreground: var(--tf-texto);
+    --popover: var(--tf-elevado);
+    --popover-foreground: var(--tf-texto);
+    --primary: var(--tf-marca);
+    --primary-foreground: var(--tf-marca-texto);
+    --secondary: var(--tf-elevado);
+    --secondary-foreground: var(--tf-texto);
+    --muted: var(--tf-hover);
+    --muted-foreground: var(--tf-texto-fraco);
+    --accent: var(--tf-realce);
+    --accent-foreground: var(--tf-texto);
+    --destructive: var(--tf-tom-vermelho-texto);
+    --border: var(--tf-borda);
+    --input: var(--tf-borda-forte);
+    --ring: var(--tf-foco);
+    --chart-1: var(--tf-tom-azul-texto);
+    --chart-2: var(--tf-tom-verde-texto);
+    --chart-3: var(--tf-tom-ambar-texto);
+    --chart-4: var(--tf-tom-rosa-texto);
+    --chart-5: var(--tf-tom-laranja-texto);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: var(--tf-superficie);
+    --sidebar-foreground: var(--tf-texto);
+    --sidebar-primary: var(--tf-marca);
+    --sidebar-primary-foreground: var(--tf-marca-texto);
+    --sidebar-accent: var(--tf-ativo);
+    --sidebar-accent-foreground: var(--tf-texto);
+    --sidebar-border: var(--tf-borda);
+    --sidebar-ring: var(--tf-foco);
+
+    --tf-raio-badge: 4px;
+    --tf-raio-chip: 5px;
+    --tf-raio-controle: 8px;
+    --tf-raio-cartao: 10px;
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+:root[data-theme="light"] {
+    --tf-fundo: #F4F4F2;
+    --tf-superficie: #FFFFFF;
+    --tf-elevado: #FFFFFF;
+    --tf-cabecalho: #F7F7F5;
+    --tf-hover: #EEEEEB;
+    --tf-ativo: #E8E8E5;
+    --tf-realce: #E4E4E0;
+    --tf-divisoria: #EDEDEA;
+    --tf-borda: #E2E2DF;
+    --tf-borda-media: #D9D9D5;
+    --tf-borda-forte: #CFCFCB;
+    --tf-rolagem: #CFCFCB;
+    --tf-foco: #9EA3A9;
+    --tf-texto: #1B1D20;
+    --tf-texto-2: #3A3D42;
+    --tf-texto-suave: #565A60;
+    --tf-texto-fraco: #6B7077;
+    --tf-texto-mudo: #80858C;
+    --tf-placeholder: #9A9EA4;
+    --tf-marca: #C8202B;
+    --tf-marca-texto: #FFFFFF;
+    --tf-marca-destaque: #C8202B;
+    --tf-peca-1: #FBF7EE;
+    --tf-peca-2: #DCD5C4;
+    --tf-peca-borda: #B9AF98;
+    --tf-peca-sombra: #9C9382;
+    --tf-status-reserva: #6E7379;
+    --tf-tom-vermelho-texto: #B42318;
+    --tf-tom-vermelho-fundo: #FDECEA;
+    --tf-tom-ambar-texto: #8A6100;
+    --tf-tom-ambar-fundo: #FBF1DA;
+    --tf-tom-azul-texto: #2F5BB7;
+    --tf-tom-azul-fundo: #E6EEFB;
+    --tf-tom-verde-texto: #1E7A4C;
+    --tf-tom-verde-fundo: #E3F4EA;
+    --tf-tom-rosa-texto: #A23D86;
+    --tf-tom-rosa-fundo: #F8E6F2;
+    --tf-tom-laranja-texto: #A8502A;
+    --tf-tom-laranja-fundo: #FBEAE2;
+    --tf-tom-neutro-texto: #5E6369;
+    --tf-tom-neutro-fundo: #EDEDEB;
+    --tf-sombra-flutuante: 0 8px 24px rgba(16, 18, 20, .12);
+    color-scheme: light;
 }
+
+/* barra de rolagem do tema (RF-70) */
+/* Firefox: as propriedades padrão. No Chromium elas desligariam o ::-webkit-scrollbar, por isso ficam só onde ele não existe */
+@supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-width: thin; scrollbar-color: var(--tf-rolagem) transparent; }
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--tf-rolagem); border-radius: 8px; border: 3px solid var(--tf-fundo); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 @layer base {
   * {

@@ -15,14 +15,14 @@ import type { Label } from "@/pages/labels";
 
 const PAGINA_VAZIA: PaginaTarefas = { data: [], total: 0, page: 1, totalPages: 0 };
 const TODOS = "todos";
-const estiloFiltro = "w-44 h-9! rounded-md bg-[#151A1E] border-[#333B44] text-white";
-const estiloItem = "text-gray-400 focus:bg-[#333B44] focus:text-white";
+const estiloFiltro = "w-44 h-9! rounded-md bg-elevado border-borda-forte text-texto";
+const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
 
-//filtros que o usuário mexe aqui, e que vão na URL; o `idUsuarioEnvolvido` é fixo e vem do token
+//filtros que o usuário mexe aqui, e que vão na URL; o `idUsuarioResponsavel` é fixo e vem do token
 type FiltroLivre = "idProjeto" | "idStatus" | "idLabel";
 const CHAVES: FiltroLivre[] = ["idProjeto", "idStatus", "idLabel"];
 
-//tarefas em que o usuário logado é responsável ou criador (SPEC-007, RF-38); só tabela, sem criar
+//tarefas em que o usuário logado é o responsável (RF-38; quem só criou não vê aqui); só tabela, sem criar
 const MinhasTarefas = () => {
     const { usuario } = useAuth();
     const idLogado = usuario?.id;
@@ -59,7 +59,7 @@ const MinhasTarefas = () => {
         if (idLogado === undefined) return;
         let ativo = true;
         const { pagina: p, filtros } = lerConsultaDaUrl(new URLSearchParams(chaveDaUrl), CHAVES);
-        fetchTarefas(p, { ...filtros, idUsuarioEnvolvido: idLogado })
+        fetchTarefas(p, { ...filtros, idUsuarioResponsavel: idLogado })
             .then((nova) => { if (ativo) setResposta(nova) })
             .catch((error) => toast.error(comMotivo("Erro ao buscar tarefas", error)));
         return () => { ativo = false };
@@ -90,7 +90,7 @@ const MinhasTarefas = () => {
             <SelectTrigger aria-label={`Filtrar por ${rotulo}`} className={estiloFiltro}>
                 <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#151A1E] border border-[#333B44] text-white">
+            <SelectContent className="bg-elevado border border-borda-forte text-texto">
                 <SelectGroup>
                     <SelectItem className={estiloItem} value={TODOS}>{rotulo}: todos</SelectItem>
                     {opcoes.map((o) => (
@@ -104,8 +104,8 @@ const MinhasTarefas = () => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Minhas Tarefas</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2">{resposta.total} no total</p>
+                <h1 className="text-2xl font-bold text-texto">Minhas Tarefas</h1>
+                <p className="text-sm text-texto-suave mt-2 ml-2">{resposta.total} no total</p>
             </div>
 
             <div className="mt-4 flex flex-row flex-wrap gap-2">
@@ -121,7 +121,7 @@ const MinhasTarefas = () => {
                 onPagina={(p) => irPara(p, consulta.filtros)}
                 statusOptions={statusOptions}
                 onTrocar={trocarCampo}
-                vazio="Você não tem tarefas como responsável ou criador"
+                vazio="Você não é responsável por nenhuma tarefa"
             />
         </Layout>
     );

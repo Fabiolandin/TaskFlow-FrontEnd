@@ -19,7 +19,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Login from './pages/login.tsx'
 import Dashboard from './pages/dashboard.tsx'
-import { Toaster } from 'sonner'
+import ToasterDoTema from './components/ToasterDoTema.tsx'
 import Projetos from './pages/projetos.tsx'
 import Projeto from './pages/projeto.tsx'
 import MinhasTarefas from './pages/minhas-tarefas.tsx'
@@ -30,6 +30,10 @@ import Usuarios from './pages/usuarios.tsx'
 import Status from './pages/status.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import { iniciarTema } from './utils/tema'
+
+//tema salvo (o index.html já aplicou antes do React) e acompanhamento do sistema (RF-69)
+iniciarTema()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -106,6 +110,6 @@ createRoot(document.getElementById('root')!).render(
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-    <Toaster />
+    <ToasterDoTema />
   </StrictMode>
 )

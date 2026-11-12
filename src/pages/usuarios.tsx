@@ -83,37 +83,37 @@ const Usuarios = () => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Usuarios</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2"> {usuarios.length} cadastrados</p>
+                <h1 className="text-2xl font-bold text-texto">Usuarios</h1>
+                <p className="text-sm text-texto-suave mt-2 ml-2"> {usuarios.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Novo Usuário
                 </Button>
             </div>
-            <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
+            <div className="mt-4 rounded-lg border border-texto/10 bg-superficie overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="border-white/10 hover:bg-transparent">
-                            <TableHead className="w-[100px] font-mono text-xs uppercase tracking-wide text-zinc-400">ID</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Nome</TableHead>
-                            <TableHead className="font-mono text-xs uppercase tracking-wide text-zinc-400">Criada em</TableHead>
-                            <TableHead className="text-right text-xs uppercase tracking-wide text-zinc-400">Ações</TableHead>
+                        <TableRow className="border-texto/10 hover:bg-transparent">
+                            <TableHead className="w-[100px] font-mono text-xs uppercase tracking-wide text-texto-suave">ID</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wide text-texto-suave">Nome</TableHead>
+                            <TableHead className="font-mono text-xs uppercase tracking-wide text-texto-suave">Criada em</TableHead>
+                            <TableHead className="text-right text-xs uppercase tracking-wide text-texto-suave">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {usuarios.map((usuario) => (
-                            <TableRow key={usuario.id} className="border-white/10 hover:bg-[#151A1E]">
-                                <TableCell className="font-mono text-zinc-500">#{usuario.id}</TableCell>
-                                <TableCell className="font-medium text-white">{usuario.nome}</TableCell>
-                                <TableCell className="font-mono text-zinc-400">{usuario.email}</TableCell>
+                            <TableRow key={usuario.id} className="border-texto/10 hover:bg-elevado">
+                                <TableCell className="font-mono text-texto-fraco">#{usuario.id}</TableCell>
+                                <TableCell className="font-medium text-texto">{usuario.nome}</TableCell>
+                                <TableCell className="font-mono text-texto-suave">{usuario.email}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white" onClick={() => handleDialogOpen(usuario)}>
+                                    <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto" onClick={() => handleDialogOpen(usuario)}>
                                         <Pencil className="size-4"/>
                                     </Button>
 
                                     <ConfirmDeleteDialog
                                         trigger={
-                                            <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
-                                                <XIcon size={4} className="text-red-400 hover:text-red-600 transition-colors cursor-pointer" />
+                                            <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto">
+                                                <XIcon size={4} className="text-tom-vermelho-texto hover:text-marca transition-colors cursor-pointer" />
                                             </Button>
                                         }
                                         id={usuario.id}

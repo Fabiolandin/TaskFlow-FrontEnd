@@ -154,57 +154,57 @@ const Status = ({ tipo }: { tipo: TipoStatus }) => {
     return (
         <Layout>
             <div className="flex flex-row">
-                <h1 className="text-2xl font-bold text-white">Status {rotuloDaAba}</h1>
-                <p className="text-sm text-zinc-400 mt-2 ml-2"> {statusDaAba.length} cadastrados</p>
+                <h1 className="text-2xl font-bold text-texto">Status {rotuloDaAba}</h1>
+                <p className="text-sm text-texto-suave mt-2 ml-2"> {statusDaAba.length} cadastrados</p>
                 <Button variant="destructive" className="ml-auto" onClick={() => setOpen(true)}>
                     Novo Status
                 </Button>
             </div>
 
-            <div className="mt-4 rounded-lg border border-white/10 bg-[#0E1012] overflow-hidden">
+            <div className="mt-4 rounded-lg border border-texto/10 bg-superficie overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="border-white/10 hover:bg-transparent">
+                        <TableRow className="border-texto/10 hover:bg-transparent">
                             <TableHead className="w-10"><span className="sr-only">Reordenar</span></TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Nome</TableHead>
-                            <TableHead className="font-mono text-xs uppercase tracking-wide text-zinc-400">Cor</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wide text-zinc-400">Encerrado</TableHead>
-                            <TableHead className="text-right text-xs uppercase tracking-wide text-zinc-400">Ações</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wide text-texto-suave">Nome</TableHead>
+                            <TableHead className="font-mono text-xs uppercase tracking-wide text-texto-suave">Cor</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wide text-texto-suave">Encerrado</TableHead>
+                            <TableHead className="text-right text-xs uppercase tracking-wide text-texto-suave">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {statusDaAba.map((status) => (
                             <TableRow key={status.id} data-status-id={status.id}
                                 onDragOver={(e) => passarSobre(e, status.id)} onDrop={(e) => { e.preventDefault(); soltar() }}
-                                className={`border-white/10 hover:bg-[#151A1E] ${arrastando === status.id ? "opacity-50" : ""}`}>
+                                className={`border-texto/10 hover:bg-elevado ${arrastando === status.id ? "opacity-50" : ""}`}>
                                 <TableCell className="w-10 py-1">
                                     <button type="button" draggable data-alca={status.id}
                                         aria-label="Arrastar para reordenar" title="Arraste, ou use ↑/↓"
                                         onDragStart={(e) => comecarArrastar(e, status.id)} onDragEnd={soltar}
                                         onKeyDown={(e) => teclarNaAlca(e, status.id)}
-                                        className="flex size-7 cursor-grab items-center justify-center rounded text-zinc-500 outline-none hover:bg-white/5 hover:text-zinc-300 focus-visible:ring-2 focus-visible:ring-[#3A3F45] active:cursor-grabbing">
+                                        className="flex size-7 cursor-grab items-center justify-center rounded text-texto-fraco outline-none hover:bg-texto/5 hover:text-texto-2 focus-visible:ring-2 focus-visible:ring-foco active:cursor-grabbing">
                                         <GripVertical aria-hidden="true" className="size-4" />
                                     </button>
                                 </TableCell>
-                                <TableCell className="font-medium text-white">{status.nome}</TableCell>
-                                <TableCell className="font-mono text-zinc-400">
+                                <TableCell className="font-medium text-texto">{status.nome}</TableCell>
+                                <TableCell className="font-mono text-texto-suave">
                                     {status.cor ? (
                                         <span className="flex items-center gap-2">
-                                            <span className="inline-block size-3 rounded-full border border-white/10" style={{ backgroundColor: status.cor }} />
+                                            <span className="inline-block size-3 rounded-full border border-texto/10" style={{ backgroundColor: status.cor }} />
                                             {status.cor}
                                         </span>
                                     ) : "—"}
                                 </TableCell>
-                                <TableCell className="text-zinc-400">{status.isFinal ? "Sim" : "—"}</TableCell>
+                                <TableCell className="text-texto-suave">{status.isFinal ? "Sim" : "—"}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white" onClick={() => handleDialogOpen(status)}>
+                                    <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto" onClick={() => handleDialogOpen(status)}>
                                         <Pencil className="size-4" />
                                     </Button>
 
                                     <ConfirmDeleteDialog
                                         trigger={
-                                            <Button variant="ghost" size="icon-sm" className="text-zinc-400 hover:text-white">
-                                                <XIcon size={4} className="text-red-400 hover:text-red-600 transition-colors cursor-pointer" />
+                                            <Button variant="ghost" size="icon-sm" className="text-texto-suave hover:text-texto">
+                                                <XIcon size={4} className="text-tom-vermelho-texto hover:text-marca transition-colors cursor-pointer" />
                                             </Button>
                                         }
                                         id={status.id}
