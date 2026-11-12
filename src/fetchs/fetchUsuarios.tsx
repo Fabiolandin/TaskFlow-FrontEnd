@@ -7,10 +7,11 @@ export const fetchUsuarios = async () => {
     });
 }
 
-export const createUsuario = async(nome: string, email: string, senha: string) => {
+//só admin cria (RF-82); isAdmin ausente = comum
+export const createUsuario = async(nome: string, email: string, senha: string, isAdmin?: boolean) => {
     return apiClient(`/usuarios`, {
         method: "POST",
-        body: JSON.stringify({ nome, email, senha }),
+        body: JSON.stringify(isAdmin === undefined ? { nome, email, senha } : { nome, email, senha, isAdmin }),
     });
 }
 
@@ -20,19 +21,20 @@ export const deleteUsuario = async(id: number) => {
     });
 }
 
-export const updateUsuario = async(id: number, nome: string, email: string, senha?: string) => {
-    const body: any = { nome, email };
-    if (senha) {
-        body.senha = senha;
-    }
+//senha vazia não vai (mantém a atual); isAdmin só vai quando um admin edita (RF-82)
+export const updateUsuario = async(id: number, nome: string, email: string, senha?: string, isAdmin?: boolean) => {
+    const body: { nome: string; email: string; senha?: string; isAdmin?: boolean } = { nome, email };
+    if (senha) body.senha = senha;
+    if (isAdmin !== undefined) body.isAdmin = isAdmin;
     return apiClient(`/usuarios/${id}`, {
         method: "PATCH",
         body: JSON.stringify(body),
     });
 }
-//um usuário (id, nome, email; nunca a senha): o cartão do menu lê o logado daqui (RF-73)
+
+//um usuário (id, nome, email, papel; nunca a senha): o menu e a tela de Usuários leem o logado daqui (RF-73, RF-86)
 export const fetchUsuario = async (id: number) => {
-    return apiClient<Pick<Usuario, "id" | "nome" | "email">>(`/usuarios/${id}`, {
+    return apiClient<Usuario>(`/usuarios/${id}`, {
         method: "GET",
     });
 }

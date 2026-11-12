@@ -6,20 +6,24 @@ import { Input } from "./ui/input";
 interface DialogNewUsuarioProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onCreateUsuario: (nome: string, email: string, senha: string) => void;
+    onCreateUsuario: (nome: string, email: string, senha: string, isAdmin?: boolean) => void;
+    //a caixa Administrador só aparece para admin (RF-86)
+    mostrarAdmin?: boolean;
 }
 
-const DialogUsuario = ({ open, onOpenChange, onCreateUsuario }: DialogNewUsuarioProps) => {
+const DialogUsuario = ({ open, onOpenChange, onCreateUsuario, mostrarAdmin = false }: DialogNewUsuarioProps) => {
 
     //state para receber os dados
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const handleCreateUsuario = async () => {
         if (!nome.trim() || !email.trim() || !senha.trim()) return; // Evita criar usuário com campos vazios
         try{
-            await onCreateUsuario(nome, email, senha);
+            await onCreateUsuario(nome, email, senha, mostrarAdmin ? isAdmin : undefined);
+            setIsAdmin(false);
             setNome("");
             setEmail("");
             setSenha("");
@@ -65,6 +69,14 @@ const DialogUsuario = ({ open, onOpenChange, onCreateUsuario }: DialogNewUsuario
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     />
+
+                    {mostrarAdmin && (
+                        <label className="mb-2 flex cursor-pointer items-center gap-2 text-[13px] text-texto-2">
+                            <input type="checkbox" data-campo="isAdmin" className="size-4 accent-marca" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />
+                            Administrador
+                            <span className="text-[11.5px] text-texto-mudo">— cria, edita e exclui usuários</span>
+                        </label>
+                    )}
 
                     <DialogFooter className="bg-superficie">
                         <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Cancelar</Button>

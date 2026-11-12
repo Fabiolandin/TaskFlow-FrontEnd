@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import Avatar from "./Avatar";
-import { fetchUsuario } from "@/fetchs/fetchUsuarios";
+import { useUsuarioLogado } from "@/utils/usuarioLogado";
 import { resolverTema, TEMAS, useTema } from "@/utils/tema";
 import { useAuth } from "@/context/AuthContext";
 import { PREF_MENU_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
@@ -34,8 +34,6 @@ const GLIFO_CADASTROS = "録";
 
 //cada tela monta o próprio Layout: a escolha de abrir/recolher Cadastros fica aqui enquanto a aba estiver aberta
 let cadastrosAberto = true;
-//nome e email do logado, lidos uma vez por id (cada tela monta o próprio menu)
-const cacheUsuario = new Map<number, { id: number; nome: string; email: string }>();
 
 const base = "flex h-9 items-center rounded-controle text-[13.5px] font-medium transition-colors";
 const cores = (ativo: boolean) => (ativo ? "bg-ativo text-texto" : "text-texto-fraco hover:bg-hover hover:text-texto");
@@ -66,19 +64,10 @@ const Item = ({ to, rotulo, glifo, end, recolhido, recuado }: ItemMenu & { recol
 );
 
 export default function Sidebar() {
-    const { logout, usuario } = useAuth();
+    const { logout } = useAuth();
     const [tema, mudarTema] = useTema();
-    const idLogado = usuario?.id;
-    const [eu, setEu] = useState(() => (idLogado ? cacheUsuario.get(idLogado) ?? null : null));
-    //sem nome e email (falha na leitura), o cartão mostra só o botão Sair (RF-73)
-    useEffect(() => {
-        if (!idLogado || cacheUsuario.has(idLogado)) return;
-        let ativo = true;
-        fetchUsuario(idLogado)
-            .then((u) => { cacheUsuario.set(idLogado, u); if (ativo) setEu(u); })
-            .catch(() => { /* o cartão fica só com o Sair */ });
-        return () => { ativo = false };
-    }, [idLogado]);
+    //nome, email e papel do logado; sem eles (falha na leitura), o cartão mostra só o Sair (RF-73)
+    const eu = useUsuarioLogado();
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const [recolhido, setRecolhido] = usePreferencia(PREF_MENU_RECOLHIDO, false);

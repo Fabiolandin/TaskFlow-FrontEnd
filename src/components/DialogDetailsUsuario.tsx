@@ -6,22 +6,25 @@ import { Input } from "./ui/input";
 interface DialogDetailsUsuarioProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    usuarioSelecionado: {id: number; nome: string; email: string;} | null;
-    onEditUsuario: (id: number, nome: string, email: string, senha: string) => void;
+    usuarioSelecionado: {id: number; nome: string; email: string; isAdmin: boolean} | null;
+    onEditUsuario: (id: number, nome: string, email: string, senha: string, isAdmin?: boolean) => void;
+    //a caixa Administrador só aparece para admin (RF-86)
+    mostrarAdmin?: boolean;
 }
 
-const DialogDetailsUsuario = ({ open, onOpenChange, usuarioSelecionado, onEditUsuario }: DialogDetailsUsuarioProps) => {
+const DialogDetailsUsuario = ({ open, onOpenChange, usuarioSelecionado, onEditUsuario, mostrarAdmin = false }: DialogDetailsUsuarioProps) => {
 
     //state para receber os dados
     const [nomeEdit, setNomeEdit] = useState("");
     const [emailEdit, setEmailEdit] = useState("");
     const [senhaEdit, setSenhaEdit] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const handleSubmit = async () => {
         if(!usuarioSelecionado) return;
         if (!nomeEdit.trim() || !emailEdit.trim()) return; // Evita editar usuário com campos vazios
         try{
-            await onEditUsuario( usuarioSelecionado.id, nomeEdit, emailEdit, senhaEdit);
+            await onEditUsuario( usuarioSelecionado.id, nomeEdit, emailEdit, senhaEdit, mostrarAdmin && isAdmin !== usuarioSelecionado.isAdmin ? isAdmin : undefined);
             setNomeEdit("");
             setEmailEdit("");
             setSenhaEdit("");
@@ -37,6 +40,7 @@ const DialogDetailsUsuario = ({ open, onOpenChange, usuarioSelecionado, onEditUs
             setNomeEdit(usuarioSelecionado.nome);
             setEmailEdit(usuarioSelecionado.email);
             setSenhaEdit("");
+            setIsAdmin(usuarioSelecionado.isAdmin);
         }
     }, [usuarioSelecionado]);
 
@@ -76,6 +80,14 @@ const DialogDetailsUsuario = ({ open, onOpenChange, usuarioSelecionado, onEditUs
                     value={senhaEdit}
                     onChange={(e) => setSenhaEdit(e.target.value)}
                     />
+
+                    {mostrarAdmin && (
+                        <label className="mb-2 flex cursor-pointer items-center gap-2 text-[13px] text-texto-2">
+                            <input type="checkbox" data-campo="isAdmin" className="size-4 accent-marca" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />
+                            Administrador
+                            <span className="text-[11.5px] text-texto-mudo">— cria, edita e exclui usuários</span>
+                        </label>
+                    )}
 
                     <DialogFooter className="bg-superficie">
                         <Button variant="ghost" className="text-texto-suave" onClick={() => onOpenChange(false)}>Cancelar</Button>
