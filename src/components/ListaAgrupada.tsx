@@ -33,7 +33,7 @@ const semRepetir = (tarefas: Tarefa[]) => tarefas.filter((t, i) => tarefas.findI
 
 //lista agrupada por status (RF-45): um GET /tarefas?idStatus=S por grupo, paginado por grupo
 const ListaAgrupada = ({ filtros, statusOptions, recarga, onTrocar, mostrarProjeto = true }: ListaAgrupadaProps) => {
-    const colunas = contarColunas({ mostrarStatus: false, mostrarProjeto });
+    const colunas = contarColunas({ mostrarProjeto });
     const chave = JSON.stringify(filtros);
     const visiveis = useMemo(() => {
         const ordenados = ordenarStatus(statusOptions);
@@ -83,7 +83,7 @@ const ListaAgrupada = ({ filtros, statusOptions, recarga, onTrocar, mostrarProje
         <div className="mt-4 overflow-clip rounded-cartao border border-borda bg-superficie">
             <Table containerClassName="overflow-x-clip">
                 <TableHeader className="sticky -top-6 z-10 bg-cabecalho">
-                    <CabecalhoTarefas mostrarStatus={false} mostrarProjeto={mostrarProjeto} />
+                    <CabecalhoTarefas mostrarProjeto={mostrarProjeto} />
                 </TableHeader>
                 {visiveis.map((s) => {
                     const grupo = grupos[s.id];
@@ -107,7 +107,7 @@ const ListaAgrupada = ({ filtros, statusOptions, recarga, onTrocar, mostrarProje
                                 </TableCell>
                             </TableRow>
                             {aberto && grupo?.tarefas.map((t) => (
-                                <LinhaTarefa key={t.id} tarefa={t} statusOptions={statusOptions} onTrocar={onTrocar} mostrarStatus={false} mostrarProjeto={mostrarProjeto} />
+                                <LinhaTarefa key={t.id} tarefa={t} statusOptions={statusOptions} onTrocar={onTrocar} mostrarProjeto={mostrarProjeto} />
                             ))}
                             {aberto && grupo && grupo.total === 0 && (
                                 <TableRow className="border-divisoria hover:bg-transparent">

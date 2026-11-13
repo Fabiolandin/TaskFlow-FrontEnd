@@ -150,7 +150,8 @@ export interface DadosEdicaoTarefa {
     labelIds?: number[];
 }
 
-export const fetchTarefas = async (page: number, filtros: FiltrosTarefa = {}, limit: number = LIMITE_TAREFAS) => {
+//raiz: só as tarefas sem tarefa-pai (árvore do projeto); fica fora de FiltrosTarefa, que vai na URL e é só número
+export const fetchTarefas = async (page: number, filtros: FiltrosTarefa & { raiz?: boolean } = {}, limit: number = LIMITE_TAREFAS) => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     for (const [chave, valor] of Object.entries(filtros)) {
         if (valor !== undefined) params.set(chave, String(valor));

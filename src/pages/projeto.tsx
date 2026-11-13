@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { CheckIcon, ChevronRight, Link2, Plus, Trash2, Users } from "lucide-react";
 import BotaoPainel from "@/components/BotaoPainel";
 import Layout from "@/components/Layout";
-import ListaAgrupada from "@/components/ListaAgrupada";
+import ListaTarefas from "@/components/ListaTarefas";
+import SecaoRecolhivel from "@/components/SecaoRecolhivel";
 import DescricaoMarkdown from "@/components/DescricaoMarkdown";
 import DialogMembrosProjeto from "@/components/DialogMembrosProjeto";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
@@ -15,7 +16,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { ApiError, comMotivo } from "@/api/apiClient";
 import { deleteProjeto, fetchProjeto, updateProjeto, type DadosEdicaoProjeto, type Projeto } from "@/fetchs/fetchProjetos";
 import { fetchStatus, ordenarStatus, type Status } from "@/fetchs/fetchStatus";
-import { AVISO_PRAZO, dataParaInput, prazoAntesDoInicio, updateTarefa, type DadosEdicaoTarefa } from "@/fetchs/fetchTarefas";
+import { AVISO_PRAZO, dataParaInput, fetchTarefas, prazoAntesDoInicio, updateTarefa, type DadosEdicaoTarefa, type PaginaTarefas } from "@/fetchs/fetchTarefas";
 import { copiarTexto, linkDoProjeto } from "@/utils/copiarLink";
 import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
 import { useAbrirCriarTarefa, useAoCriarTarefa } from "@/context/CriarTarefaContext";
@@ -32,9 +33,59 @@ const idDaRota = (valor?: string) => (valor && /^[1-9]\d*$/.test(valor) ? Number
 const BotaoNovaTarefa = ({ idProjeto }: { idProjeto: number }) => {
     const abrir = useAbrirCriarTarefa();
     return (
-        <Button variant="ghost" size="sm" className="ml-auto text-texto-fraco" onClick={() => abrir({ idProjeto })}>
+        <Button variant="ghost" size="sm" className="text-texto-fraco" onClick={() => abrir({ idProjeto })}>
             <Plus aria-hidden="true" />Nova tarefa
         </Button>
+    );
+};
+
+interface TarefasDoProjetoProps {
+    idProjeto: number;
+    statusOptions: Status[];
+    //muda depois de uma troca na linha ou de uma tarefa criada: a página atual é relida
+    recarga: number;
+    onTrocar: (id: number, dados: DadosEdicaoTarefa) => void;
+}
+
+//tarefas do projeto: árvore (só as raiz, paginadas; cada uma abre/fecha as sub-tarefas logo abaixo), numa seção recolhível
+const TarefasDoProjeto = ({ idProjeto, statusOptions, recarga, onTrocar }: TarefasDoProjetoProps) => {
+    const [pagina, setPagina] = useState(1);
+    const [resposta, setResposta] = useState<PaginaTarefas | null>(null);
+
+    useEffect(() => {
+        let ativo = true;
+        fetchTarefas(pagina, { idProjeto, raiz: true })
+            .then((nova) => { if (ativo) setResposta(nova) })
+            .catch((error) => toast.error(comMotivo("Erro ao buscar tarefas", error)));
+        return () => { ativo = false };
+    }, [idProjeto, pagina, recarga]);
+
+    const totalPaginas = Math.max(resposta?.totalPages ?? 1, 1);
+
+    return (
+        <SecaoRecolhivel
+            titulo="Tarefas"
+            aria-label="Tarefas do projeto"
+            className="mt-3 border-t border-borda pt-5"
+            contagem={resposta ? resposta.total : undefined}
+            acao={<BotaoNovaTarefa idProjeto={idProjeto} />}
+        >
+            {resposta && (
+                <ListaTarefas
+                    className=""
+                    tarefas={resposta.data}
+                    pagina={pagina}
+                    totalPaginas={totalPaginas}
+                    onPagina={totalPaginas > 1 ? setPagina : undefined}
+                    statusOptions={statusOptions}
+                    onTrocar={onTrocar}
+                    mostrarProjeto={false}
+                    arvore
+                    recarga={recarga}
+                    vazio="Nenhuma tarefa neste projeto"
+                />
+            )}
+        </SecaoRecolhivel>
     );
 };
 
@@ -59,7 +110,7 @@ const Aviso = ({ titulo, texto }: { titulo: string; texto: string }) => (
     </Layout>
 );
 
-//página do projeto (RF-48): lê da API, nunca do cartão; cada campo grava ao mudar; tarefas agrupadas por status
+//página do projeto (RF-48): lê da API, nunca do cartão; cada campo grava ao mudar; tarefas em tabela num accordion
 const PaginaProjeto = ({ id }: { id: number | null }) => {
     const navigate = useNavigate();
     const [projeto, setProjeto] = useState<Projeto | null>(null);
@@ -241,13 +292,7 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                         />
                         <DescricaoMarkdown valor={projeto.descricao} onGravar={(descricao) => gravar({ descricao })} />
 
-                        <section aria-label="Tarefas do projeto" className="mt-3 border-t border-borda pt-5">
-                            <div className="flex items-center">
-                                <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Tarefas</h2>
-                                <BotaoNovaTarefa idProjeto={projeto.id} />
-                            </div>
-                            <ListaAgrupada filtros={{ idProjeto: projeto.id }} statusOptions={statusTarefa} recarga={recarga} onTrocar={trocarNaTarefa} mostrarProjeto={false} />
-                        </section>
+                        <TarefasDoProjeto key={projeto.id} idProjeto={projeto.id} statusOptions={statusTarefa} recarga={recarga} onTrocar={trocarNaTarefa} />
                     </div>
 
                     {painelRecolhido && (

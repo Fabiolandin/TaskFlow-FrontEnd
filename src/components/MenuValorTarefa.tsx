@@ -21,15 +21,18 @@ interface MenuStatusProps {
     //cadastro de status de tarefa, na ordem do RF-43
     statusOptions: Status[];
     onEscolher: (idStatus: number) => void;
+    //só a bolinha, sem o nome (ao lado do nome da tarefa na linha)
+    soIcone?: boolean;
 }
 
 //ícone de status da linha, que abre o menu com os status; escolher o atual não grava
-export const MenuStatus = ({ status, statusOptions, onEscolher }: MenuStatusProps) => (
+export const MenuStatus = ({ status, statusOptions, onEscolher, soIcone }: MenuStatusProps) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <button type="button" data-campo="status" aria-label={`Status: ${status.nome}`} className={estiloGatilho} onClick={naoPropaga}>
+            <button type="button" data-campo="status" aria-label={`Status: ${status.nome}`} title={soIcone ? status.nome : undefined} onClick={naoPropaga}
+                className={soIcone ? "flex size-6 shrink-0 items-center justify-center rounded-md outline-none hover:bg-realce focus-visible:ring-2 focus-visible:ring-foco data-[state=open]:bg-realce" : estiloGatilho}>
                 <StatusIcon status={status} todos={statusOptions} />
-                <span className="truncate">{status.nome}</span>
+                {!soIcone && <span className="truncate">{status.nome}</span>}
             </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent onClick={naoPropaga}>

@@ -1,7 +1,6 @@
-//quais colunas opcionais a lista mostra (RF-78): Status some na agrupada e no projeto; Projeto some no projeto
+//quais colunas opcionais a lista mostra (RF-78): o status é a bolinha ao lado do nome; Projeto some no projeto e nas sub-tarefas
 export interface ColunasTarefa {
-    mostrarStatus?: boolean;
     mostrarProjeto?: boolean;
 }
 
-export const contarColunas = ({ mostrarStatus = true, mostrarProjeto = true }: ColunasTarefa) => 5 + (mostrarStatus ? 1 : 0) + (mostrarProjeto ? 1 : 0);
+export const contarColunas = ({ mostrarProjeto = true }: ColunasTarefa) => 5 + (mostrarProjeto ? 1 : 0);

@@ -20,9 +20,9 @@ interface ItemMenu {
 //ordem do menu (RF-42): itens soltos e o grupo Cadastros
 const SOLTOS: ItemMenu[] = [
     { to: "/", rotulo: "Painel", glifo: "愛", end: true },
-    { to: "/minhas-tarefas", rotulo: "Minhas Tarefas", glifo: "友" },
-    { to: "/tarefas", rotulo: "Tarefas", glifo: "仕" },
     { to: "/projetos", rotulo: "Projetos", glifo: "家" },
+    { to: "/tarefas", rotulo: "Tarefas", glifo: "仕" },
+    { to: "/minhas-tarefas", rotulo: "Minhas Tarefas", glifo: "友" },
 ];
 const CADASTROS: ItemMenu[] = [
     { to: "/labels", rotulo: "Labels", glifo: "学" },
