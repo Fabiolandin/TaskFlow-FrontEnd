@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import StatusIcon from "./StatusIcon";
 import BadgePrioridade from "./BadgePrioridade";
 import Avatar from "./Avatar";
+import { DATA_MAX, DATA_MIN } from "@/utils/limitesData";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { comMotivo } from "@/api/apiClient";
 import { ordenarStatus, type Status } from "@/fetchs/fetchStatus";
@@ -153,7 +154,7 @@ export const CampoPrazo = ({ tarefa, onEscolher }: CampoPrazoProps) => {
                 className={`${estiloGatilho} font-mono text-[12px] text-texto-fraco`}>
                 {formatarDia(tarefa.data_final)}
             </button>
-            <input ref={entrada} type="date" tabIndex={-1} aria-hidden="true" value={atual}
+            <input ref={entrada} type="date" min={DATA_MIN} max={DATA_MAX} tabIndex={-1} aria-hidden="true" value={atual}
                 onClick={naoPropaga} onChange={(e) => mudar(e.target.value)}
                 className="pointer-events-none absolute inset-0 opacity-0" />
         </span>

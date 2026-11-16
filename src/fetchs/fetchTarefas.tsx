@@ -38,6 +38,8 @@ export interface Tarefa {
     idTarefaPai: number | null;
     tarefaPai: { id: number; nome: string } | null;
     subtarefas: { total: number; concluidas: number };
+    //caminho da raiz até a mãe direta; só vem preenchido no backlog, na fila e no cronograma da sprint
+    ancestrais: { id: number; nome: string }[];
     //refinamento (RF-108, SPEC-024): horas em minutos; null = vazio
     minutosEstimados: number | null;
     minutosBuffer: number | null;

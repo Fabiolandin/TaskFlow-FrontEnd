@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useState, type DragEvent, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, type DragEvent, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ChevronRight, Plus, Search, XIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Search, XIcon } from "lucide-react";
 import Layout from "@/components/Layout";
 import Avatar from "@/components/Avatar";
 import CampoHoras from "@/components/CampoHoras";
 import Cronograma from "@/components/Cronograma";
 import SeloStatusSprint from "@/components/SeloStatusSprint";
+import { FaixaTema, IdTarefa, Trilha } from "@/components/TrilhaTarefa";
+import { corDoTema } from "@/utils/temaTarefa";
 import { MenuStatus } from "@/components/MenuValorTarefa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,11 +51,14 @@ const CartaoItem = ({ item, statusOptions, podeEditar, ativa, onStatus, onRemove
     return (
         <li data-item-id={item.id} data-item-tipo={item.tipo} draggable={podeEditar} onDragStart={onArrastar}
             onDragOver={(e) => { if (podeEditar) e.preventDefault(); }} onDrop={onSoltarAntes}
-            className={`group flex flex-col gap-1 rounded-md border border-borda bg-superficie px-2.5 py-2 ${podeEditar ? "cursor-grab active:cursor-grabbing" : ""}`}>
+            className={`group flex gap-2 rounded-md border border-borda bg-superficie py-2 pl-1.5 pr-2.5 ${podeEditar ? "cursor-grab active:cursor-grabbing" : ""}`}>
+            {item.tarefa ? <FaixaTema tarefa={item.tarefa} /> : <span aria-hidden="true" className="w-[3px] shrink-0" />}
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+            {item.tarefa && <Trilha tarefa={item.tarefa} className="pl-7" />}
             <div className="flex min-w-0 items-center gap-1.5">
                 {item.tarefa && <MenuStatus soIcone status={item.tarefa.status} statusOptions={statusOptions} onEscolher={(idStatus) => onStatus(item.tarefa!.id, idStatus)} />}
                 {item.tarefa ? (
-                    <Link to={`/tarefas/${item.tarefa.id}`} className="min-w-0 truncate text-[13px] font-medium text-texto hover:underline">{nome}</Link>
+                    <Link to={`/tarefas/${item.tarefa.id}`} title={`#${item.tarefa.id} ${nome}`} className="min-w-0 truncate text-[13px] font-medium text-texto hover:underline"><IdTarefa id={item.tarefa.id} />{nome}</Link>
                 ) : (
                     <span className="min-w-0 truncate pl-1 text-[13px] font-medium text-texto-2">{nome}</span>
                 )}
@@ -67,7 +72,6 @@ const CartaoItem = ({ item, statusOptions, podeEditar, ativa, onStatus, onRemove
                     </button>
                 )}
             </div>
-            {item.tarefa && <span className="truncate pl-7 text-[11.5px] text-texto-mudo">{item.tarefa.projeto.nome}</span>}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-7 font-mono text-[10.5px] text-texto-fraco">
                 <span data-previsto title="Previsto">prev {intervalo(item.inicioPrevisto, item.entregaPrevista)}</span>
                 {ativa && <span data-projetado title="Projetado">proj {intervalo(item.inicioProjetado, item.entregaProjetada)}</span>}
@@ -84,6 +88,7 @@ const CartaoItem = ({ item, statusOptions, podeEditar, ativa, onStatus, onRemove
                     )}
                 </div>
             )}
+            </div>
         </li>
     );
 };
@@ -135,12 +140,40 @@ const DialogLinha = ({ nomeDev, onFechar, onCriar }: { nomeDev: string; onFechar
 
 // ---------- backlog (RF-116) ----------
 
+//backlog em árvore por tema: as tarefas do backlog penduradas nos seus ancestrais.
+//Ancestral que não está no backlog (já na sprint, concluído ou fora do filtro) aparece apagado, só como contexto.
+type NoBacklog = { id: number; nome: string; tarefa: Tarefa | null; filhos: NoBacklog[] };
+
+const montarArvore = (tarefas: Tarefa[]): NoBacklog[] => {
+    const nos = new Map<number, NoBacklog>();
+    const raizes: NoBacklog[] = [];
+    for (const t of tarefas) {
+        const caminho = [...t.ancestrais, { id: t.id, nome: t.nome }];
+        caminho.forEach((passo, i) => {
+            if (nos.has(passo.id)) return;
+            const no: NoBacklog = { id: passo.id, nome: passo.nome, tarefa: null, filhos: [] };
+            nos.set(passo.id, no);
+            (i === 0 ? raizes : nos.get(caminho[i - 1].id)!.filhos).push(no);
+        });
+        nos.get(t.id)!.tarefa = t;
+    }
+    const ordenar = (lista: NoBacklog[]) => { lista.sort((a, b) => a.id - b.id); lista.forEach((n) => ordenar(n.filhos)); };
+    ordenar(raizes);
+    return raizes;
+};
+
+//primeira tarefa real da sub-árvore (para mostrar o projeto na linha do tema)
+const primeiraTarefa = (n: NoBacklog): Tarefa | null => n.tarefa ?? n.filhos.reduce<Tarefa | null>((achou, f) => achou ?? primeiraTarefa(f), null);
+
 const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga: number; podeArrastar: boolean; idEu: number | null; souAdmin: boolean; onEstimar: () => void }) => {
     const [tarefas, setTarefas] = useState<Tarefa[]>([]);
     const [busca, setBusca] = useState("");
     const [idProjeto, setIdProjeto] = useState<number | null>(null);
     const [projetos, setProjetos] = useState<Projeto[]>([]);
     const [versao, setVersao] = useState(0);
+    const [recolhidos, setRecolhidos] = useState<Set<number>>(new Set());
+    const arvore = useMemo(() => montarArvore(tarefas), [tarefas]);
+    const alternar = (id: number) => setRecolhidos((r) => { const n = new Set(r); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
     useEffect(() => { fetchProjetos(1, 100).then((p) => setProjetos(p.data)).catch(() => { /* filtro sem opções */ }); }, []);
     useEffect(() => {
@@ -164,7 +197,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
     };
 
     return (
-        <aside data-backlog aria-label="Backlog" className="flex w-80 shrink-0 flex-col rounded-lg border border-borda bg-superficie">
+        <aside data-backlog aria-label="Backlog" className="flex w-[22rem] shrink-0 flex-col rounded-lg border border-borda bg-superficie">
             <div className="flex flex-col gap-2 border-b border-divisoria p-3">
                 <div className="flex items-center gap-2">
                     <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Backlog</h2>
@@ -187,18 +220,49 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
             </div>
             <ul className="flex max-h-[calc(100vh-280px)] flex-col overflow-y-auto">
                 {tarefas.length === 0 && <li className="p-4 text-center text-[12.5px] text-texto-fraco">Nada no backlog</li>}
-                {tarefas.map((t) => {
-                    const pode = souAdmin || (idEu !== null && t.idUsuarioResponsavel === idEu);
+                {arvore.map((raiz) => {
+                    const cor = corDoTema(raiz.id);
+                    const projeto = primeiraTarefa(raiz)?.projeto.nome;
+                    const linha = (n: NoBacklog, nivel: number): ReactNode => {
+                        const t = n.tarefa;
+                        const aberto = !recolhidos.has(n.id);
+                        const pode = !!t && (souAdmin || (idEu !== null && t.idUsuarioResponsavel === idEu));
+                        return (
+                            <Fragment key={n.id}>
+                                <li data-backlog-id={t?.id} data-backlog-contexto={t ? undefined : n.id} data-nivel={nivel} draggable={!!t && podeArrastar}
+                                    onDragStart={t ? (e) => { e.dataTransfer.setData(TIPO_ARRASTO, JSON.stringify({ tipo: "backlog", idTarefa: t.id } satisfies Arrasto)); e.dataTransfer.effectAllowed = "move"; } : undefined}
+                                    title={t ? undefined : "Não está no backlog (já está numa sprint, concluída ou fora do filtro)"}
+                                    style={{ paddingLeft: 6 + nivel * 14 }}
+                                    className={`flex items-center gap-1 pr-3 hover:bg-hover ${nivel === 0 ? "border-t border-divisoria pt-1.5" : "pt-0.5"} pb-1 ${t && podeArrastar ? "cursor-grab" : ""}`}>
+                                    {n.filhos.length > 0 ? (
+                                        <button type="button" aria-label={`${aberto ? "Recolher" : "Expandir"} #${n.id} ${n.nome}`} aria-expanded={aberto} onClick={() => alternar(n.id)}
+                                            className="shrink-0 rounded p-0.5 text-texto-mudo hover:text-texto">
+                                            {aberto ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                                        </button>
+                                    ) : <span aria-hidden="true" className="w-[18px] shrink-0" />}
+                                    <div className="flex min-w-0 flex-1 flex-col">
+                                        {t ? (
+                                            <Link to={`/tarefas/${t.id}`} title={`#${t.id} ${t.nome}`} className={`truncate text-[12.5px] text-texto hover:underline ${nivel === 0 ? "font-medium" : ""}`}><IdTarefa id={t.id} />{t.nome}</Link>
+                                        ) : (
+                                            <span className={`truncate text-[12.5px] text-texto-mudo ${nivel === 0 ? "font-medium" : ""}`}><IdTarefa id={n.id} />{n.nome}</span>
+                                        )}
+                                        {nivel === 0 && (projeto || t?.issueExterna) && (
+                                            <span className="truncate text-[10.5px] text-texto-mudo">{projeto}{!aberto && n.filhos.length > 0 ? ` · ${n.filhos.length} sub` : ""}{t?.issueExterna ? ` · ${t.issueExterna}` : ""}</span>
+                                        )}
+                                    </div>
+                                    {t && <>
+                                        <CampoHoras className={estiloHorasBacklog} rotulo={`Estimativa de ${t.nome}`} valor={t.minutosEstimados} pode={pode} onGravar={(m) => estimar(t, { minutosEstimados: m })} />
+                                        <CampoHoras className={estiloHorasBacklog} rotulo={`Buffer de ${t.nome}`} valor={t.minutosBuffer} pode={pode} onGravar={(m) => estimar(t, { minutosBuffer: m })} />
+                                    </>}
+                                </li>
+                                {aberto && n.filhos.map((f) => linha(f, nivel + 1))}
+                            </Fragment>
+                        );
+                    };
                     return (
-                        <li key={t.id} data-backlog-id={t.id} draggable={podeArrastar}
-                            onDragStart={(e) => { e.dataTransfer.setData(TIPO_ARRASTO, JSON.stringify({ tipo: "backlog", idTarefa: t.id } satisfies Arrasto)); e.dataTransfer.effectAllowed = "move"; }}
-                            className={`flex items-center gap-1 border-b border-divisoria px-3 py-1.5 last:border-b-0 hover:bg-hover ${podeArrastar ? "cursor-grab" : ""}`}>
-                            <div className="flex min-w-0 flex-1 flex-col">
-                                <Link to={`/tarefas/${t.id}`} className="truncate text-[12.5px] text-texto hover:underline">{t.nome}</Link>
-                                <span className="truncate text-[10.5px] text-texto-mudo">{t.projeto.nome}{t.issueExterna ? ` · ${t.issueExterna}` : ""}</span>
-                            </div>
-                            <CampoHoras className={estiloHorasBacklog} rotulo={`Estimativa de ${t.nome}`} valor={t.minutosEstimados} pode={pode} onGravar={(m) => estimar(t, { minutosEstimados: m })} />
-                            <CampoHoras className={estiloHorasBacklog} rotulo={`Buffer de ${t.nome}`} valor={t.minutosBuffer} pode={pode} onGravar={(m) => estimar(t, { minutosBuffer: m })} />
+                        <li key={raiz.id} data-tema={raiz.id} className="relative">
+                            <span aria-hidden="true" className="absolute inset-y-1 left-0 w-[3px] rounded-r-full" style={{ background: cor }} />
+                            <ul>{linha(raiz, 0)}</ul>
                         </li>
                     );
                 })}

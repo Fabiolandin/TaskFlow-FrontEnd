@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { MenuStatus } from "./MenuValorTarefa";
 import Avatar from "./Avatar";
+import { FaixaTema, IdTarefa, Trilha } from "@/components/TrilhaTarefa";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { comMotivo } from "@/api/apiClient";
@@ -172,16 +173,22 @@ const Cronograma = ({ sprint, devs, statusOptions, souAdmin, idEu, recarga }: Cr
                             const nome = l.tarefa?.nome ?? l.avulso?.nome ?? "";
                             return (
                                 <tr key={l.id} data-linha-id={l.id} data-status={l.status} className="border-b border-divisoria last:border-b-0 hover:bg-hover">
-                                    <td className={`${estiloCelula} max-w-56`}>
+                                    <td className={`${estiloCelula} max-w-64`}>
+                                        <div className="flex min-w-0 gap-2">
+                                        {l.tarefa ? <FaixaTema tarefa={l.tarefa} /> : <span aria-hidden="true" className="w-[3px] shrink-0" />}
+                                        <div className="min-w-0 flex-1">
+                                        {l.tarefa && <Trilha tarefa={l.tarefa} comProjeto={false} className="pl-7" />}
                                         <div className="flex min-w-0 items-center gap-1.5">
                                             {l.tarefa && <MenuStatus soIcone status={l.tarefa.status} statusOptions={statusOptions} onEscolher={(id) => trocarStatus(l.tarefa!.id, id)} />}
-                                            {l.tarefa ? <Link to={`/tarefas/${l.tarefa.id}`} className="truncate font-medium text-texto hover:underline">{nome}</Link> : <span className="truncate pl-1 text-texto-2">{nome}</span>}
+                                            {l.tarefa ? <Link to={`/tarefas/${l.tarefa.id}`} title={`#${l.tarefa.id} ${nome}`} className="truncate font-medium text-texto hover:underline"><IdTarefa id={l.tarefa.id} />{nome}</Link> : <span className="truncate pl-1 text-texto-2">{nome}</span>}
                                             {l.tarefa?.issueExterna && <span className="shrink-0 font-mono text-[10.5px] text-texto-mudo">{l.tarefa.issueExterna}</span>}
                                         </div>
                                         <div className="mt-0.5 flex gap-1 pl-7">
                                             {l.naoPrevista && <Chip tipo="nao-prevista" cor="bg-tom-rosa-fundo text-tom-rosa-texto">não prevista</Chip>}
                                             {l.risco && <Chip tipo="risco" cor="bg-tom-laranja-fundo text-tom-laranja-texto">risco</Chip>}
                                             {l.transborda && <Chip tipo="transborda" cor="bg-tom-laranja-fundo text-tom-laranja-texto">vai transbordar {formatarMinutos(l.transborda.minutos)}</Chip>}
+                                        </div>
+                                        </div>
                                         </div>
                                     </td>
                                     <td className={`${estiloCelula} whitespace-nowrap text-texto-2`}>{l.usuario.nome}</td>
