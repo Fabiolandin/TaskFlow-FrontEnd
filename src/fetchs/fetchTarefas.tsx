@@ -38,6 +38,11 @@ export interface Tarefa {
     idTarefaPai: number | null;
     tarefaPai: { id: number; nome: string } | null;
     subtarefas: { total: number; concluidas: number };
+    //refinamento (RF-108, SPEC-024): horas em minutos; null = vazio
+    minutosEstimados: number | null;
+    minutosBuffer: number | null;
+    issueExterna: string | null;
+    solicitante: string | null;
 }
 
 export interface PaginaTarefas {
@@ -148,10 +153,15 @@ export interface DadosEdicaoTarefa {
     idUsuarioResponsavel?: number | null;
     idProjeto?: number;
     labelIds?: number[];
+    minutosEstimados?: number | null;
+    minutosBuffer?: number | null;
+    issueExterna?: string | null;
+    solicitante?: string | null;
 }
 
-//raiz: só as tarefas sem tarefa-pai (árvore do projeto); fica fora de FiltrosTarefa, que vai na URL e é só número
-export const fetchTarefas = async (page: number, filtros: FiltrosTarefa & { raiz?: boolean } = {}, limit: number = LIMITE_TAREFAS) => {
+//raiz: só as tarefas sem tarefa-pai (árvore do projeto); foraDeSprint: o backlog (RF-116); busca: nome contém (RF-56).
+//Ficam fora de FiltrosTarefa, que vai na URL e é só número
+export const fetchTarefas = async (page: number, filtros: FiltrosTarefa & { raiz?: boolean; foraDeSprint?: boolean; busca?: string } = {}, limit: number = LIMITE_TAREFAS) => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     for (const [chave, valor] of Object.entries(filtros)) {
         if (valor !== undefined) params.set(chave, String(valor));
@@ -181,6 +191,12 @@ export const updateTarefa = async (id: number, dados: DadosEdicaoTarefa) => {
         body: JSON.stringify(dados),
     });
 }
+
+//RF-15/RF-16 (SPEC-024): tarefa em sprint responde 409 "Tarefa está na(s) sprint(s) …"; com removerDaSprint, sai delas e é excluída
+export const deleteTarefa = async (id: number, removerDaSprint = false) => {
+    return apiClient(`/tarefas/${id}${removerDaSprint ? "?removerDaSprint=true" : ""}`, { method: "DELETE" });
+}
+export const estaEmSprint = (mensagem: string | undefined) => !!mensagem && /^Tarefa está nas? sprints? /.test(mensagem);
 
 //busca rápida (RF-58): tarefas cujo nome contém o texto, até `limit`
 export const buscarTarefas = async (busca: string, limit: number = 5) => {

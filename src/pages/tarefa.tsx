@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { CheckIcon, ChevronRight, Link2, Plus } from "lucide-react";
+import { CheckIcon, ChevronRight, Link2, Plus, Trash2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import StatusIcon from "@/components/StatusIcon";
 import BadgePrioridade from "@/components/BadgePrioridade";
@@ -25,6 +25,11 @@ import ChipLabel from "@/components/ChipLabel";
 import { copiarTexto, linkDaTarefa } from "@/utils/copiarLink";
 import { PREF_PAINEL_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
 import BotaoPainel from "@/components/BotaoPainel";
+import CampoHoras from "@/components/CampoHoras";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { deleteTarefa, estaEmSprint } from "@/fetchs/fetchTarefas";
+import { useUsuarioLogado } from "@/utils/usuarioLogado";
 
 const SEM_RESPONSAVEL = "sem-responsavel";
 const estiloGatilho = "h-8! w-full rounded-md border-transparent bg-transparent px-2 text-[13px] text-texto-2 hover:bg-elevado data-[state=open]:bg-elevado";
@@ -73,6 +78,12 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
     const [labelsMarcadas, setLabelsMarcadas] = useState<number[] | null>(null);
     const [copiado, setCopiado] = useState(false);
     const [painelRecolhido, setPainelRecolhido] = usePreferencia(PREF_PAINEL_RECOLHIDO, false);
+    //RF-108: estimar é do admin e do responsável; RF-15/RF-16 (SPEC-024): aviso de sprint ao excluir
+    const eu = useUsuarioLogado();
+    const navigate = useNavigate();
+    const [avisoSprint, setAvisoSprint] = useState<string | null>(null);
+    const [issue, setIssue] = useState<string | null>(null);
+    const [solicitante, setSolicitante] = useState<string | null>(null);
     //trilha (RF-67): a cadeia de pais, da mais alta até a pai direta
     const [ancestrais, setAncestrais] = useState<{ id: number; nome: string }[]>([]);
     //histórico intercalado com os comentários (RF-55); relido depois de cada gravação
@@ -230,6 +241,32 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
     });
     const labelsNaTela = labelsMarcadas === null ? tarefa.labels : labels.filter((l) => labelsMarcadas.includes(l.id));
 
+    const podeEstimar = eu?.isAdmin === true || (eu !== null && tarefa.idUsuarioResponsavel === eu.id);
+
+    //texto livre: grava ao sair, só se mudou; vazio grava null
+    const sairDoTexto = async (campo: "issueExterna" | "solicitante", rascunho: string | null, limpar: () => void) => {
+        if (rascunho === null) return;
+        const novo = rascunho.trim() || null;
+        if (novo !== tarefa[campo]) await gravar({ [campo]: novo });
+        limpar();
+    };
+
+    const excluir = async (removerDaSprint = false) => {
+        try {
+            await deleteTarefa(tarefa.id, removerDaSprint);
+        } catch (error) {
+            if (!removerDaSprint && error instanceof ApiError && error.status === 409 && estaEmSprint(error.mensagemDaApi)) {
+                setAvisoSprint(error.mensagemDaApi!.replace(/^Tarefa está/, "Esta tarefa está"));
+                return;
+            }
+            toast.error(comMotivo("Não foi possível excluir a tarefa", error));
+            return;
+        }
+        setAvisoSprint(null);
+        toast.success("Tarefa excluída");
+        navigate(`/projetos/${tarefa.idProjeto}`);
+    };
+
     const copiar = async () => {
         try {
             await copiarTexto(linkDaTarefa(tarefa.id));
@@ -261,7 +298,23 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                         {copiado ? <CheckIcon aria-hidden="true" /> : <Link2 aria-hidden="true" />}
                         {copiado ? "Copiado" : "Copiar link"}
                     </Button>
+                    <ConfirmDeleteDialog
+                        trigger={<Button variant="ghost" size="sm" aria-label="Excluir tarefa" className="text-texto-fraco hover:text-tom-vermelho-texto"><Trash2 aria-hidden="true" />Excluir</Button>}
+                        id={tarefa.id} titulo={tarefa.nome} descricao="tarefa" funcao={() => excluir()}
+                    />
                 </header>
+                <AlertDialog open={avisoSprint !== null} onOpenChange={(v) => { if (!v) setAvisoSprint(null); }}>
+                    <AlertDialogContent className="bg-superficie p-5">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-texto text-[17px]">Excluir mesmo assim?</AlertDialogTitle>
+                            <AlertDialogDescription data-aviso-sprint>{avisoSprint}. Ela sai da sprint e as filas são recalculadas.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="bg-superficie">
+                            <AlertDialogCancel className="text-texto-suave">Cancelar</AlertDialogCancel>
+                            <AlertDialogAction className="bg-tom-vermelho-texto hover:bg-tom-vermelho-texto" onClick={() => excluir(true)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
                 <div className={`grid items-start gap-10 ${painelRecolhido ? "grid-cols-[minmax(0,1fr)_40px]" : "grid-cols-[minmax(0,1fr)_300px]"}`}>
                     <div data-coluna="principal" className="flex min-w-0 flex-col gap-3">
@@ -378,6 +431,26 @@ const PaginaTarefa = ({ id }: { id: number | null }) => {
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                        </Propriedade>
+
+                        {/* refinamento (RF-108, SPEC-024) */}
+                        <Propriedade rotulo="Estimativa">
+                            <CampoHoras className="h-8 w-full px-2 text-[12.5px]" rotulo="Estimativa" valor={tarefa.minutosEstimados} pode={podeEstimar} onGravar={(m) => gravar({ minutosEstimados: m })} />
+                        </Propriedade>
+                        <Propriedade rotulo="Buffer">
+                            <CampoHoras className="h-8 w-full px-2 text-[12.5px]" rotulo="Buffer" valor={tarefa.minutosBuffer} pode={podeEstimar} onGravar={(m) => gravar({ minutosBuffer: m })} />
+                        </Propriedade>
+                        <Propriedade rotulo="Issue">
+                            <Input aria-label="Issue" placeholder="ex.: PEL-139" maxLength={50} className={estiloData}
+                                value={issue ?? tarefa.issueExterna ?? ""} onChange={(e) => setIssue(e.target.value)}
+                                onBlur={() => sairDoTexto("issueExterna", issue, () => setIssue(null))}
+                                onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
+                        </Propriedade>
+                        <Propriedade rotulo="Solicitante">
+                            <Input aria-label="Solicitante" placeholder="Quem pediu" maxLength={100} className={estiloData.replace("font-mono ", "")}
+                                value={solicitante ?? tarefa.solicitante ?? ""} onChange={(e) => setSolicitante(e.target.value)}
+                                onBlur={() => sairDoTexto("solicitante", solicitante, () => setSolicitante(null))}
+                                onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
                         </Propriedade>
                     </aside>
                     )}

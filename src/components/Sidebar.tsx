@@ -17,18 +17,21 @@ interface ItemMenu {
     end?: boolean;
 }
 
-//ordem do menu (RF-42): itens soltos e o grupo Cadastros
+//ordem do menu (RF-42, SPEC-023): itens soltos e o grupo Cadastros, com Calendário por último
 const SOLTOS: ItemMenu[] = [
     { to: "/", rotulo: "Painel", glifo: "愛", end: true },
     { to: "/projetos", rotulo: "Projetos", glifo: "家" },
     { to: "/tarefas", rotulo: "Tarefas", glifo: "仕" },
     { to: "/minhas-tarefas", rotulo: "Minhas Tarefas", glifo: "友" },
+    { to: "/sprints", rotulo: "Sprints", glifo: "走" },
+    { to: "/apontamentos", rotulo: "Apontamentos", glifo: "時" },
 ];
 const CADASTROS: ItemMenu[] = [
     { to: "/labels", rotulo: "Labels", glifo: "学" },
     { to: "/status/tarefa", rotulo: "Status de tarefa", glifo: "道" },
     { to: "/status/projeto", rotulo: "Status de projeto", glifo: "路" },
     { to: "/usuarios", rotulo: "Usuários", glifo: "夢" },
+    { to: "/calendario", rotulo: "Calendário", glifo: "暦" },
 ];
 const GLIFO_CADASTROS = "録";
 
@@ -118,7 +121,7 @@ export default function Sidebar() {
                 {SOLTOS.map((item) => <Item key={item.to} {...item} recolhido={recolhido} />)}
 
                 {recolhido ? (
-                    //no trilho, Cadastros é um glifo que abre os 4 itens num menu suspenso (RF-59)
+                    //no trilho, Cadastros é um glifo que abre os itens num menu suspenso (RF-59)
                     <DropdownMenu>
                         <DropdownMenuTrigger aria-label="Cadastros" title="Cadastros"
                             className={`${base} ${cores(naRotaDoGrupo)} mt-4 w-8 justify-center outline-none`}>

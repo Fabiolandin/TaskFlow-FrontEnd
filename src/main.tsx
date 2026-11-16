@@ -27,6 +27,10 @@ import Tarefas from './pages/tarefas.tsx'
 import Tarefa from './pages/tarefa.tsx'
 import Labels from './pages/labels.tsx'
 import Usuarios from './pages/usuarios.tsx'
+import Calendario from './pages/calendario.tsx'
+import Sprints from './pages/sprints.tsx'
+import Sprint from './pages/sprint.tsx'
+import Apontamentos from './pages/apontamentos.tsx'
 import Status from './pages/status.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
@@ -88,6 +92,30 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/usuarios" element={
               <ProtectedRoute>
                 <Usuarios />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/sprints" element={
+              <ProtectedRoute>
+                <Sprints />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/sprints/:id" element={
+              <ProtectedRoute>
+                <Sprint />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/apontamentos" element={
+              <ProtectedRoute>
+                <Apontamentos />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/calendario" element={
+              <ProtectedRoute>
+                <Calendario />
               </ProtectedRoute>
             } />
 
