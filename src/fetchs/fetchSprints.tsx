@@ -123,7 +123,8 @@ export const acompanhar = (idItem: number, dados: DadosAcompanhamento) => apiCli
 export interface PreviaFechamento {
     sprint: Sprint;
     proxima: { id: number | null; nome: string };
-    itens: { id: number; tarefa: Tarefa; usuario: Membro; evolucao: number; restantes: number }[];
+    //naProxima (SPEC-028): "mesma" = a tarefa já está lá e as restantes somam; "parente" = mãe/sub-tarefa lá, só backlog
+    itens: { id: number; tarefa: Tarefa; usuario: Membro; evolucao: number; restantes: number; naProxima: "mesma" | "parente" | null }[];
 }
 export type DestinoFechamento = "proxima" | "backlog";
 

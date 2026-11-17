@@ -42,8 +42,8 @@ const Selo = ({ cor, tipo, children }: { cor: string; tipo: string; children: Re
 
 // ---------- cartão ----------
 
-const CartaoItem = ({ item, statusOptions, podeEditar, ativa, onStatus, onRemover, onArrastar, onSoltarAntes }: {
-    item: ItemDaFila; statusOptions: Status[]; podeEditar: boolean; ativa: boolean;
+const CartaoItem = ({ item, statusOptions, podeEditar, podeStatus, ativa, onStatus, onRemover, onArrastar, onSoltarAntes }: {
+    item: ItemDaFila; statusOptions: Status[]; podeEditar: boolean; podeStatus: boolean; ativa: boolean;
     onStatus: (idTarefa: number, idStatus: number) => void; onRemover: () => void;
     onArrastar: (e: DragEvent) => void; onSoltarAntes: (e: DragEvent) => void;
 }) => {
@@ -56,7 +56,7 @@ const CartaoItem = ({ item, statusOptions, podeEditar, ativa, onStatus, onRemove
             <div className="flex min-w-0 flex-1 flex-col gap-1">
             {item.tarefa && <Trilha tarefa={item.tarefa} className="pl-7" />}
             <div className="flex min-w-0 items-center gap-1.5">
-                {item.tarefa && <MenuStatus soIcone status={item.tarefa.status} statusOptions={statusOptions} onEscolher={(idStatus) => onStatus(item.tarefa!.id, idStatus)} />}
+                {item.tarefa && <MenuStatus soIcone desabilitado={!podeStatus} status={item.tarefa.status} statusOptions={statusOptions} onEscolher={(idStatus) => onStatus(item.tarefa!.id, idStatus)} />}
                 {item.tarefa ? (
                     <Link to={`/tarefas/${item.tarefa.id}`} title={`#${item.tarefa.id} ${nome}`} className="min-w-0 truncate text-[13px] font-medium text-texto hover:underline"><IdTarefa id={item.tarefa.id} />{nome}</Link>
                 ) : (
@@ -278,7 +278,7 @@ const DialogFechar = ({ sprint, onFechar, onFechada }: { sprint: Sprint; onFecha
     const [destinos, setDestinos] = useState<Record<number, DestinoFechamento>>({});
     useEffect(() => {
         fetchPreviaFechamento(sprint.id)
-            .then((p) => { setPrevia(p); setDestinos(Object.fromEntries(p.itens.map((i) => [i.id, "proxima" as const]))); })
+            .then((p) => { setPrevia(p); setDestinos(Object.fromEntries(p.itens.map((i) => [i.id, i.naProxima === "parente" ? "backlog" as const : "proxima" as const]))); })
             .catch((e) => toast.error(comMotivo("Erro ao preparar o fechamento", e)));
     }, [sprint.id]);
     const fechar = async () => {
@@ -302,12 +302,15 @@ const DialogFechar = ({ sprint, onFechar, onFechada }: { sprint: Sprint; onFecha
                         {previa.itens.map((i) => (
                             <li key={i.id} data-fechamento-item={i.id} className="flex flex-wrap items-center gap-2 border-b border-divisoria px-3 py-2 last:border-b-0">
                                 <div className="flex min-w-0 flex-1 flex-col">
-                                    <span className="truncate text-[13px] font-medium text-texto">{i.tarefa.nome}</span>
+                                    <Trilha tarefa={i.tarefa} />
+                                    <span className="truncate text-[13px] font-medium text-texto"><IdTarefa id={i.tarefa.id} />{i.tarefa.nome}</span>
                                     <span className="text-[11.5px] text-texto-fraco">{i.usuario.nome} · {i.evolucao}% · restam {formatarMinutos(i.restantes)}</span>
+                                    {i.naProxima === "mesma" && <span data-na-proxima className="text-[11.5px] text-tom-ambar-texto">Já está em {previa.proxima.nome}: mover soma as horas restantes lá</span>}
+                                    {i.naProxima === "parente" && <span data-na-proxima className="text-[11.5px] text-tom-ambar-texto">A tarefa mãe ou uma sub-tarefa dela já está em {previa.proxima.nome}: só dá para devolver ao backlog</span>}
                                 </div>
                                 {(["proxima", "backlog"] as const).map((d) => (
-                                    <label key={d} className="flex items-center gap-1.5 text-[12.5px] text-texto-2">
-                                        <input type="radio" name={`destino-${i.id}`} value={d} checked={destinos[i.id] === d}
+                                    <label key={d} className={`flex items-center gap-1.5 text-[12.5px] text-texto-2 ${d === "proxima" && i.naProxima === "parente" ? "opacity-50" : ""}`}>
+                                        <input type="radio" name={`destino-${i.id}`} value={d} checked={destinos[i.id] === d} disabled={d === "proxima" && i.naProxima === "parente"}
                                             onChange={() => setDestinos((x) => ({ ...x, [i.id]: d }))} />
                                         {d === "proxima" ? `Mover para ${previa.proxima.nome}${previa.proxima.id === null ? " (nova)" : ""}` : "Devolver ao backlog"}
                                     </label>
@@ -459,6 +462,7 @@ const PaginaSprint = ({ id }: { id: number }) => {
                                 {dev.itens.length === 0 && <li className="rounded-md border border-dashed border-borda p-3 text-center text-[12px] text-texto-mudo">{editavel ? "Solte tarefas aqui" : "Fila vazia"}</li>}
                                 {dev.itens.map((item) => (
                                     <CartaoItem key={item.id} item={item} statusOptions={statusOptions} podeEditar={editavel} ativa={ativa}
+                                        podeStatus={sprint.status !== "Fechada" && (souAdmin || dev.usuario.id === eu?.id)}
                                         onStatus={(idTarefa, idStatus) => executar(() => updateTarefa(idTarefa, { idStatus }), "Erro ao trocar o status")}
                                         onRemover={() => executar(() => deleteItem(item.id), "Erro ao tirar da sprint")}
                                         onArrastar={(e) => { e.dataTransfer.setData(TIPO_ARRASTO, JSON.stringify({ tipo: "item", id: item.id, idUsuario: dev.usuario.id } satisfies Arrasto)); e.dataTransfer.effectAllowed = "move"; }}

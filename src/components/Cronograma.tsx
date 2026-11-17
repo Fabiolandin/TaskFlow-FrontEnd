@@ -54,8 +54,10 @@ const CampoEvolucao = ({ linha, pode, onGravar }: { linha: LinhaCronograma; pode
     if (!pode) return <div data-evolucao={linha.evolucao} className="flex w-28 flex-col gap-1"><span className="font-mono text-[12px] text-texto">{linha.evolucao}%</span>{barra}</div>;
     const sair = () => {
         if (texto === null) return;
-        const n = Number(texto);
         setTexto(null);
+        //campo apagado: volta ao valor que estava, sem gravar 0 por engano
+        if (!texto.trim()) return;
+        const n = Number(texto);
         if (!Number.isInteger(n) || n < 0 || n > 100) { toast.error("Evolução é um inteiro de 0 a 100"); return; }
         if (n !== linha.evolucao) onGravar(n);
     };
@@ -179,7 +181,7 @@ const Cronograma = ({ sprint, devs, statusOptions, souAdmin, idEu, recarga }: Cr
                                         <div className="min-w-0 flex-1">
                                         {l.tarefa && <Trilha tarefa={l.tarefa} comProjeto={false} className="pl-7" />}
                                         <div className="flex min-w-0 items-center gap-1.5">
-                                            {l.tarefa && <MenuStatus soIcone status={l.tarefa.status} statusOptions={statusOptions} onEscolher={(id) => trocarStatus(l.tarefa!.id, id)} />}
+                                            {l.tarefa && <MenuStatus soIcone desabilitado={!pode} status={l.tarefa.status} statusOptions={statusOptions} onEscolher={(id) => trocarStatus(l.tarefa!.id, id)} />}
                                             {l.tarefa ? <Link to={`/tarefas/${l.tarefa.id}`} title={`#${l.tarefa.id} ${nome}`} className="truncate font-medium text-texto hover:underline"><IdTarefa id={l.tarefa.id} />{nome}</Link> : <span className="truncate pl-1 text-texto-2">{nome}</span>}
                                             {l.tarefa?.issueExterna && <span className="shrink-0 font-mono text-[10.5px] text-texto-mudo">{l.tarefa.issueExterna}</span>}
                                         </div>

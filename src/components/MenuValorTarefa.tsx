@@ -24,10 +24,18 @@ interface MenuStatusProps {
     onEscolher: (idStatus: number) => void;
     //só a bolinha, sem o nome (ao lado do nome da tarefa na linha)
     soIcone?: boolean;
+    //só mostra o status, sem abrir o menu (sem permissão, sprint fechada)
+    desabilitado?: boolean;
 }
 
 //ícone de status da linha, que abre o menu com os status; escolher o atual não grava
-export const MenuStatus = ({ status, statusOptions, onEscolher, soIcone }: MenuStatusProps) => (
+export const MenuStatus = ({ status, statusOptions, onEscolher, soIcone, desabilitado }: MenuStatusProps) => desabilitado ? (
+    <span data-campo="status" aria-label={`Status: ${status.nome}`} title={status.nome}
+        className={soIcone ? "flex size-6 shrink-0 items-center justify-center" : "flex h-7 max-w-full items-center gap-2 text-[13px] text-texto-suave"}>
+        <StatusIcon status={status} todos={statusOptions} />
+        {!soIcone && <span className="truncate">{status.nome}</span>}
+    </span>
+) : (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <button type="button" data-campo="status" aria-label={`Status: ${status.nome}`} title={soIcone ? status.nome : undefined} onClick={naoPropaga}
