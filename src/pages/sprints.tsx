@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { hojeLocal } from "@/utils/limitesData";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,7 @@ const somarDias = (data: string, n: number) => new Date(Date.parse(`${data}T00:0
 const DialogSprint = ({ sprints, editando, onFechar, onSalva }: { sprints: Sprint[]; editando?: Sprint; onFechar: () => void; onSalva: (s: Sprint) => void }) => {
     //sugere a sequência: começa no dia seguinte à última e dura o mesmo
     const ultima = sprints[0];
-    const inicioSugerido = ultima ? somarDias(ultima.dataFim.slice(0, 10), 1) : new Date().toISOString().slice(0, 10);
+    const inicioSugerido = ultima ? somarDias(ultima.dataFim.slice(0, 10), 1) : hojeLocal();
     const duracao = ultima ? Math.round((Date.parse(ultima.dataFim) - Date.parse(ultima.dataInicio)) / 86400000) : 13;
     const proximoNome = ultima?.nome.match(/^(.*?)(\d+)$/) ? ultima.nome.replace(/(\d+)$/, (n) => String(Number(n) + 1)) : "Sprint 1";
     const [nome, setNome] = useState(editando?.nome ?? proximoNome);

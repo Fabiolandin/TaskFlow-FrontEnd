@@ -10,7 +10,8 @@ export interface Apontamento {
     fim: string;
     minutos: number;
     idItemSprint: number | null;
-    item: { id: number; nome: string | null; sprint: { id: number; nome: string } } | null;
+    //trilha e projeto vêm na leitura do dia (GET /apontamentos); nas respostas de escrita, trilha vazia
+    item: ItemApontavel | null;
     observacao: string | null;
     foraDaSprint: boolean;
     alerta?: string;
@@ -18,7 +19,7 @@ export interface Apontamento {
 
 export interface DiaDeApontamentos {
     data: string;
-    sprint: { id: number; nome: string } | null;
+    sprint: { id: number; nome: string; status: "Planejamento" | "Ativa" | "Fechada" } | null;
     apontamentos: Apontamento[];
     totalMinutos: number;
     sugestaoInicio: string | null;

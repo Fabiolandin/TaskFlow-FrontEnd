@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Download, Pencil, Plus, XIcon } from "lucide-react";
+import { hojeLocal } from "@/utils/limitesData";
 import Layout from "@/components/Layout";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ const estiloItem = "text-texto-suave focus:bg-realce focus:text-texto";
 const estiloCabecalho = "h-9 font-mono text-[10px] font-medium uppercase tracking-[.12em] text-texto-mudo";
 const TODOS = "todos";
 
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = hojeLocal;
 const nomeDe = (usuarios: Usuario[], id: number) => usuarios.find((u) => u.id === id)?.nome ?? `#${id}`;
 
 const SeletorUsuario = ({ usuarios, valor, onChange, comTodos, rotulo }: { usuarios: Usuario[]; valor: number | null; onChange: (id: number | null) => void; comTodos?: boolean; rotulo: string }) => (

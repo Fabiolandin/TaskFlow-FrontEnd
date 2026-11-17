@@ -21,6 +21,8 @@ import { fetchStatus, type Status } from "@/fetchs/fetchStatus";
 import { fetchProjetos, type Projeto } from "@/fetchs/fetchProjetos";
 import { formatarMinutos, lerHoras } from "@/utils/minutos";
 
+//a API aceita até 100 por página
+const LIMITE_BACKLOG = 100;
 const estiloHorasBacklog = "h-7 w-14 px-1 text-center text-[11.5px]";
 import { useUsuarioLogado } from "@/utils/usuarioLogado";
 
@@ -167,6 +169,8 @@ const primeiraTarefa = (n: NoBacklog): Tarefa | null => n.tarefa ?? n.filhos.red
 
 const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga: number; podeArrastar: boolean; idEu: number | null; souAdmin: boolean; onEstimar: () => void }) => {
     const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+    //total do backlog na API: a lista traz no máximo LIMITE_BACKLOG
+    const [total, setTotal] = useState(0);
     const [busca, setBusca] = useState("");
     const [idProjeto, setIdProjeto] = useState<number | null>(null);
     const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -179,8 +183,8 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
     useEffect(() => {
         let ativo = true;
         const espera = setTimeout(() => {
-            fetchTarefas(1, { foraDeSprint: true, ...(idProjeto && { idProjeto }), ...(busca.trim() && { busca: busca.trim() }) }, 100)
-                .then((r) => { if (ativo) setTarefas(r.data) })
+            fetchTarefas(1, { foraDeSprint: true, ...(idProjeto && { idProjeto }), ...(busca.trim() && { busca: busca.trim() }) }, LIMITE_BACKLOG)
+                .then((r) => { if (ativo) { setTarefas(r.data); setTotal(r.total); } })
                 .catch((e) => toast.error(comMotivo("Erro ao buscar o backlog", e)));
         }, 250);
         return () => { ativo = false; clearTimeout(espera); };
@@ -201,7 +205,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
             <div className="flex flex-col gap-2 border-b border-divisoria p-3">
                 <div className="flex items-center gap-2">
                     <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Backlog</h2>
-                    <span data-contagem className="font-mono text-[11px] text-texto-fraco">{tarefas.length}</span>
+                    <span data-contagem className="font-mono text-[11px] text-texto-fraco">{total}</span>
                 </div>
                 <div className="relative">
                     <Search aria-hidden="true" className="absolute left-2 top-2.5 size-3.5 text-texto-mudo" />
@@ -216,6 +220,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
                         </SelectGroup>
                     </SelectContent>
                 </Select>
+                {total > tarefas.length && <p data-backlog-cortado className="text-[11.5px] text-tom-ambar-texto">Mostrando {tarefas.length} de {total}: use a busca ou o filtro de projeto</p>}
                 <div className="flex justify-end gap-1 pr-1 font-mono text-[9.5px] uppercase tracking-[.1em] text-texto-mudo"><span className="w-14 text-center">Est.</span><span className="w-14 text-center">Buffer</span></div>
             </div>
             <ul className="flex max-h-[40vh] flex-col overflow-y-auto lg:max-h-[calc(100vh-280px)]">
@@ -231,7 +236,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
                             <Fragment key={n.id}>
                                 <li data-backlog-id={t?.id} data-backlog-contexto={t ? undefined : n.id} data-nivel={nivel} draggable={!!t && podeArrastar}
                                     onDragStart={t ? (e) => { e.dataTransfer.setData(TIPO_ARRASTO, JSON.stringify({ tipo: "backlog", idTarefa: t.id } satisfies Arrasto)); e.dataTransfer.effectAllowed = "move"; } : undefined}
-                                    title={t ? undefined : "Não está no backlog (já está numa sprint, concluída ou fora do filtro)"}
+                                    title={t ? undefined : "Tem sub-tarefas: só agrupa, não entra na sprint. Planeje as sub-tarefas"}
                                     style={{ paddingLeft: 6 + nivel * 14 }}
                                     className={`flex items-center gap-1 pr-3 hover:bg-hover ${nivel === 0 ? "border-t border-divisoria pt-1.5" : "pt-0.5"} pb-1 ${t && podeArrastar ? "cursor-grab" : ""}`}>
                                     {n.filhos.length > 0 ? (

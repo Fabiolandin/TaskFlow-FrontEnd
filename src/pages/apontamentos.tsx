@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Shuffle, XIcon } from "lucide-react";
+import { hojeLocal } from "@/utils/limitesData";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ import type { Usuario } from "@/pages/usuarios";
 
 const SEM_TAREFA = "";
 const HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = hojeLocal;
 const somarDias = (data: string, n: number) => new Date(Date.parse(`${data}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 const nomeDoDia = (data: string) => {
     const texto = new Date(`${data}T12:00:00Z`).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", timeZone: "UTC" });
@@ -53,14 +54,14 @@ const SeletorItem = ({ valor, itens, idSprintDoDia, rotulo, onChange }: { valor:
 );
 
 //uma linha já gravada: horas e observação gravam ao sair do campo; item grava ao escolher
-const LinhaApontamento = ({ a, itens, idSprintDoDia, onMudou, onConverter }: {
-    a: Apontamento; itens: ItemApontavel[]; idSprintDoDia: number | null; onMudou: () => void; onConverter: (a: Apontamento) => void;
+const LinhaApontamento = ({ a, itens, idSprintDoDia, podeConverter, onMudou, onConverter }: {
+    a: Apontamento; itens: ItemApontavel[]; idSprintDoDia: number | null; podeConverter: boolean; onMudou: () => void; onConverter: (a: Apontamento) => void;
 }) => {
     const [inicio, setInicio] = useState<string | null>(null);
     const [fim, setFim] = useState<string | null>(null);
     const [obs, setObs] = useState<string | null>(null);
     //o item atual entra na lista mesmo que não esteja entre os oferecidos (outra sprint, mostrar todas desligado)
-    const opcoes = a.item && !itens.some((i) => i.id === a.item!.id) ? [...itens, { id: a.item.id, nome: a.item.nome, idTarefa: null, sprint: a.item.sprint }] : itens;
+    const opcoes = a.item && !itens.some((i) => i.id === a.item!.id) ? [...itens, a.item] : itens;
 
     const gravar = async (dados: Parameters<typeof updateApontamento>[1]) => {
         try {
@@ -96,7 +97,8 @@ const LinhaApontamento = ({ a, itens, idSprintDoDia, onMudou, onConverter }: {
             <td className="px-2 py-1"><Input aria-label="Observação" className={`${estiloCampo} w-full`} value={obs ?? a.observacao ?? ""} placeholder="–"
                 onChange={(e) => setObs(e.target.value)} onBlur={() => { if (obs !== null && obs.trim() !== (a.observacao ?? "")) gravar({ observacao: obs.trim() || null }); else setObs(null); }} /></td>
             <td className="whitespace-nowrap px-2 py-1 text-right">
-                {a.idItemSprint === null && (
+                {/* converter cria a tarefa na sprint do dia: sem sprint aberta no dia, não há onde pôr (RF-150) */}
+                {a.idItemSprint === null && podeConverter && (
                     <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-[12px] text-texto-fraco" onClick={() => onConverter(a)}><Shuffle className="size-3.5" />Converter em tarefa</Button>
                 )}
                 <button type="button" aria-label="Excluir apontamento" onClick={excluir} className="rounded p-1 text-texto-mudo hover:text-tom-vermelho-texto"><XIcon className="size-3.5" /></button>
@@ -234,7 +236,7 @@ const Apontamentos = () => {
                         </thead>
                         <tbody>
                             {dia?.apontamentos.map((a) => (
-                                <LinhaApontamento key={a.id} a={a} itens={itens} idSprintDoDia={idSprintDoDia} onMudou={reler} onConverter={setConvertendo} />
+                                <LinhaApontamento key={a.id} a={a} itens={itens} idSprintDoDia={idSprintDoDia} podeConverter={!!dia?.sprint && dia.sprint.status !== "Fechada"} onMudou={reler} onConverter={setConvertendo} />
                             ))}
                             <tr data-linha-nova className="bg-fundo">
                                 <td className="px-2 py-1.5"><Input aria-label="Início novo" className={`${estiloCampo} w-20 font-mono`} value={inicio} onChange={(e) => setInicio(e.target.value)} /></td>

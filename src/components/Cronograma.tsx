@@ -205,7 +205,8 @@ const Cronograma = ({ sprint, devs, statusOptions, souAdmin, idEu, recarga }: Cr
                                     <td className={`${estiloCelula} whitespace-nowrap font-mono text-[11.5px] text-texto-2`}>{intervalo(l.inicioPrevisto, l.entregaPrevista)}{l.diasUteis !== null && <span className="text-texto-mudo"> · {l.diasUteis}d</span>}</td>
                                     <td className={`${estiloCelula} whitespace-nowrap font-mono text-[11.5px] text-texto-fraco`}>{intervalo(l.inicioProjetado, l.entregaProjetada)}</td>
                                     <td className={estiloCelula}>
-                                        {pode ? (
+                                        {/* entrega real só com o item em 100% (RF-147); abaixo disso a API recusa */}
+                                        {pode && l.evolucao >= 100 ? (
                                             <Input aria-label="Entrega real" type="date" className={`${estiloTexto} w-32 font-mono`} value={l.dataEntregaReal ?? ""}
                                                 onChange={(e) => gravar(l, { dataEntregaReal: e.target.value || null })} />
                                         ) : <span className="font-mono text-[11.5px] text-texto-2">{diaMes(l.dataEntregaReal)}</span>}
