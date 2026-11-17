@@ -219,8 +219,9 @@ const Apontamentos = () => {
                     </span>
                 </div>
 
-                <form onSubmit={lancar} className="mt-4 overflow-hidden rounded-lg border border-borda bg-superficie">
-                    <table className="w-full border-collapse">
+                {/* em tela estreita a tabela rola de lado, em vez de cortar o "Lançar" */}
+                <form onSubmit={lancar} className="mt-4 overflow-x-auto rounded-lg border border-borda bg-superficie">
+                    <table className="w-full min-w-[820px] border-collapse">
                         <thead className="bg-cabecalho">
                             <tr className="border-b border-divisoria font-mono text-[10px] uppercase tracking-[.12em] text-texto-mudo">
                                 <th className="w-24 px-2 py-2 text-left font-medium">Início</th>

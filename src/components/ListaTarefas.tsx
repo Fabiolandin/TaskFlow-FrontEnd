@@ -30,8 +30,9 @@ interface ListaTarefasProps {
 const ListaTarefas = ({ tarefas, pagina = 1, totalPaginas = 1, onPagina, statusOptions, onTrocar, vazio = "Nenhuma tarefa encontrada", mostrarProjeto = true, className = "mt-4", arvore = false, recarga = 0 }: ListaTarefasProps) => {
     return (
         <>
-                <div className={`${className} overflow-clip rounded-cartao border border-borda bg-superficie`}>
-                    <Table containerClassName="overflow-x-clip">
+                {/* abaixo de 768px a tabela rola de lado (o nome não espreme até uma letra); acima, o clip mantém o cabeçalho sticky */}
+                <div className={`${className} overflow-x-auto rounded-cartao border border-borda bg-superficie md:overflow-clip`}>
+                    <Table containerClassName="overflow-x-visible md:overflow-x-clip" className="min-w-[720px] md:min-w-0">
                         {/* cabeçalho preso no topo da área que rola (RF-72) */}
                         <TableHeader className="sticky -top-6 z-10 bg-cabecalho">
                             <CabecalhoTarefas mostrarProjeto={mostrarProjeto} />

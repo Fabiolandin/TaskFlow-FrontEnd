@@ -154,7 +154,7 @@ const Tarefas = () => {
 
     return (
         <Layout>
-            <div className="flex flex-row items-center gap-3">
+            <div className="flex flex-row flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-bold text-texto">Tarefas</h1>
                 {exibicao === "tabela" && <p className="text-sm text-texto-suave mt-1">{resposta.total} no total</p>}
                 <div className="ml-auto flex items-center gap-0.5 rounded-md border border-borda bg-superficie p-0.5">

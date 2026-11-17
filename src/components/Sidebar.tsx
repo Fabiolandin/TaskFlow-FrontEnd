@@ -7,7 +7,7 @@ import { useUsuarioLogado } from "@/utils/usuarioLogado";
 import { resolverTema, TEMAS, useTema } from "@/utils/tema";
 import { useAuth } from "@/context/AuthContext";
 import { PREF_MENU_RECOLHIDO, usePreferencia } from "@/utils/preferencias";
-import { CheckIcon, ChevronRight, LogOutIcon, Moon, PanelLeftClose, PanelLeftOpen, Sun } from "lucide-react";
+import { CheckIcon, ChevronRight, LogOutIcon, Moon, PanelLeftClose, PanelLeftOpen, Sun, XIcon } from "lucide-react";
 
 interface ItemMenu {
     to: string;
@@ -66,14 +66,16 @@ const Item = ({ to, rotulo, glifo, end, recolhido, recuado }: ItemMenu & { recol
     </NavLink>
 );
 
-export default function Sidebar() {
+//gaveta: no celular o menu abre por cima da tela, sempre expandido, e o botão do topo vira "Fechar menu"
+export default function Sidebar({ gaveta, onFechar }: { gaveta?: boolean; onFechar?: () => void } = {}) {
     const { logout } = useAuth();
     const [tema, mudarTema] = useTema();
     //nome, email e papel do logado; sem eles (falha na leitura), o cartão mostra só o Sair (RF-73)
     const eu = useUsuarioLogado();
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const [recolhido, setRecolhido] = usePreferencia(PREF_MENU_RECOLHIDO, false);
+    const [recolhidoPref, setRecolhido] = usePreferencia(PREF_MENU_RECOLHIDO, false);
+    const recolhido = !gaveta && recolhidoPref;
 
     //numa rota do grupo, ele aparece aberto
     const naRotaDoGrupo = CADASTROS.some((c) => pathname === c.to || pathname.startsWith(`${c.to}/`));
@@ -88,7 +90,12 @@ export default function Sidebar() {
         navigate("/login");
     };
 
-    const botaoRecolher = (
+    const botaoRecolher = gaveta ? (
+        <button type="button" onClick={onFechar} aria-label="Fechar menu" title="Fechar menu"
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-texto-mudo hover:bg-hover hover:text-texto">
+            <XIcon aria-hidden="true" className="size-4" />
+        </button>
+    ) : (
         <button type="button" onClick={() => setRecolhido(!recolhido)}
             aria-label={recolhido ? "Expandir menu" : "Recolher menu"} title={recolhido ? "Expandir menu" : "Recolher menu"}
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-texto-mudo hover:bg-hover hover:text-texto">
@@ -97,8 +104,8 @@ export default function Sidebar() {
     );
 
     return (
-        <aside data-menu={recolhido ? "recolhido" : "expandido"}
-            className={`flex h-screen shrink-0 flex-col border-r border-borda bg-superficie py-4 text-texto transition-[width] ${recolhido ? "w-14 items-center px-2" : "w-60 px-3"}`}>
+        <aside data-menu={gaveta ? "gaveta" : recolhido ? "recolhido" : "expandido"}
+            className={`flex h-dvh shrink-0 flex-col border-r border-borda bg-superficie py-4 text-texto transition-[width] ${recolhido ? "w-14 items-center px-2" : "w-60 px-3"}`}>
             {recolhido ? (
                 <div className="mb-6 flex flex-col items-center gap-3">
                     <Link to="/" aria-label="Taskflow, Painel" title="Taskflow"><Peca pequena /></Link>

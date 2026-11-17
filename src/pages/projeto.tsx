@@ -280,7 +280,8 @@ const PaginaProjeto = ({ id }: { id: number | null }) => {
                     />
                 </header>
 
-                <div className={`grid items-start gap-10 ${painelRecolhido ? "grid-cols-[minmax(0,1fr)_40px]" : "grid-cols-[minmax(0,1fr)_300px]"}`}>
+                {/* abaixo de 1024px o painel de propriedades desce para baixo do conteúdo */}
+                <div className={`grid grid-cols-1 items-start gap-6 lg:gap-10 ${painelRecolhido ? "lg:grid-cols-[minmax(0,1fr)_40px]" : "lg:grid-cols-[minmax(0,1fr)_300px]"}`}>
                     <div data-coluna="principal" className="flex min-w-0 flex-col gap-3">
                         <Input
                             aria-label="Nome do projeto"

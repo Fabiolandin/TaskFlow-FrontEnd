@@ -197,7 +197,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
     };
 
     return (
-        <aside data-backlog aria-label="Backlog" className="flex w-[22rem] shrink-0 flex-col rounded-lg border border-borda bg-superficie">
+        <aside data-backlog aria-label="Backlog" className="flex w-full shrink-0 flex-col lg:w-[22rem] rounded-lg border border-borda bg-superficie">
             <div className="flex flex-col gap-2 border-b border-divisoria p-3">
                 <div className="flex items-center gap-2">
                     <h2 className="font-mono text-[11px] font-medium uppercase tracking-[.12em] text-texto-mudo">Backlog</h2>
@@ -218,7 +218,7 @@ const Backlog = ({ recarga, podeArrastar, idEu, souAdmin, onEstimar }: { recarga
                 </Select>
                 <div className="flex justify-end gap-1 pr-1 font-mono text-[9.5px] uppercase tracking-[.1em] text-texto-mudo"><span className="w-14 text-center">Est.</span><span className="w-14 text-center">Buffer</span></div>
             </div>
-            <ul className="flex max-h-[calc(100vh-280px)] flex-col overflow-y-auto">
+            <ul className="flex max-h-[40vh] flex-col overflow-y-auto lg:max-h-[calc(100vh-280px)]">
                 {tarefas.length === 0 && <li className="p-4 text-center text-[12.5px] text-texto-fraco">Nada no backlog</li>}
                 {arvore.map((raiz) => {
                     const cor = corDoTema(raiz.id);
@@ -301,7 +301,7 @@ const DialogFechar = ({ sprint, onFechar, onFechada }: { sprint: Sprint; onFecha
                     <ul data-fechamento className="flex max-h-[50vh] flex-col overflow-y-auto rounded-md border border-borda">
                         {previa.itens.map((i) => (
                             <li key={i.id} data-fechamento-item={i.id} className="flex flex-wrap items-center gap-2 border-b border-divisoria px-3 py-2 last:border-b-0">
-                                <div className="flex min-w-0 flex-1 flex-col">
+                                <div className="flex min-w-[12rem] flex-1 basis-full flex-col sm:basis-0">
                                     <Trilha tarefa={i.tarefa} />
                                     <span className="truncate text-[13px] font-medium text-texto"><IdTarefa id={i.tarefa.id} />{i.tarefa.nome}</span>
                                     <span className="text-[11.5px] text-texto-fraco">{i.usuario.nome} · {i.evolucao}% · restam {formatarMinutos(i.restantes)}</span>
@@ -442,14 +442,15 @@ const PaginaSprint = ({ id }: { id: number }) => {
                 {sprint.status === "Fechada" && "Sprint fechada: somente leitura."}
             </p>
 
-            <div className="flex items-start gap-4">
+            {/* telas menores: backlog em cima, filas embaixo rolando de lado */}
+            <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start">
                 {sprint.status !== "Fechada" && <Backlog recarga={recarga} podeArrastar={editavel} idEu={eu?.id ?? null} souAdmin={souAdmin} onEstimar={reler} />}
                 <div className="flex min-w-0 flex-1 gap-3 overflow-x-auto pb-3">
                     {plano.devs.length === 0 && <p className="p-6 text-[13px] text-texto-fraco">Ninguém tem jornada cadastrada. Cadastre em Cadastros › Calendário.</p>}
                     {plano.devs.map((dev) => (
                         <section key={dev.usuario.id} data-fila-dev={dev.usuario.id} aria-label={`Fila de ${dev.usuario.nome}`}
                             onDragOver={(e) => { if (editavel) e.preventDefault(); }} onDrop={(e) => soltar(e, dev)}
-                            className="flex w-72 shrink-0 flex-col gap-2 rounded-lg border border-borda bg-fundo p-2.5">
+                            className="flex w-[min(18rem,85vw)] shrink-0 flex-col gap-2 rounded-lg border border-borda bg-fundo p-2.5">
                             <div className="flex items-center gap-2">
                                 <Avatar usuario={dev.usuario} tamanho={22} />
                                 <span className="truncate text-[13px] font-semibold text-texto">{dev.usuario.nome}</span>

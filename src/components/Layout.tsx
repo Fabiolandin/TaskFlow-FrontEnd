@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { MenuIcon } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import DialogNewTarefa, { type OpcoesTarefa } from "@/components/DialogNewTarefa";
 import BuscaRapida from "@/components/BuscaRapida";
@@ -44,6 +45,13 @@ export default function Layout({ children }: LayoutProps) {
     const [inicial, setInicial] = useState<Partial<CamposTarefa>>({});
     const [tarefaPai, setTarefaPai] = useState<InicioCriarTarefa["tarefaPai"]>(undefined);
     const [buscaAberta, setBuscaAberta] = useState(false);
+    //gaveta do menu no celular; cada tela monta o próprio Layout, então trocar de rota já fecha
+    const [menuAberto, setMenuAberto] = useState(false);
+    const refAbrirMenu = useRef<HTMLButtonElement>(null);
+    const fecharMenu = () => {
+        setMenuAberto(false);
+        refAbrirMenu.current?.focus();
+    };
     const [aberturaBusca, setAberturaBusca] = useState(0);
 
     const abrirCriar = (inicio?: InicioCriarTarefa) => {
@@ -96,11 +104,30 @@ export default function Layout({ children }: LayoutProps) {
 
     return (
         <CriarTarefaContext.Provider value={abrirCriar}>
-            <div className="flex h-screen overflow-hidden bg-fundo">
-                <Sidebar />
-                <main className="flex-1 overflow-y-auto p-6">
-                    {children}
-                </main>
+            <div className="flex h-dvh overflow-hidden bg-fundo">
+                {/* desktop e tablet: menu fixo ao lado; celular: gaveta aberta pelo botão da barra do topo */}
+                <div className="hidden md:flex"><Sidebar /></div>
+                {menuAberto && (
+                    //Esc fecha; o foco entra na gaveta ao abrir (vai para o primeiro link do menu) e volta ao botão ao fechar
+                    <div role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-40 flex md:hidden"
+                        ref={(el) => { if (el && !el.contains(document.activeElement)) el.querySelector<HTMLElement>("nav a")?.focus(); }}
+                        onKeyDown={(e) => { if (e.key === "Escape") fecharMenu(); }}>
+                        <Sidebar gaveta onFechar={fecharMenu} />
+                        <button type="button" aria-label="Fechar menu" className="flex-1 bg-black/50" onClick={fecharMenu} />
+                    </div>
+                )}
+                <div className="flex min-w-0 flex-1 flex-col">
+                    <header data-barra-movel className="flex h-12 shrink-0 items-center gap-2 border-b border-borda bg-superficie px-3 md:hidden">
+                        <button ref={refAbrirMenu} type="button" aria-label="Abrir menu" onClick={() => setMenuAberto(true)}
+                            className="flex size-9 items-center justify-center rounded-md text-texto-fraco hover:bg-hover hover:text-texto">
+                            <MenuIcon aria-hidden="true" className="size-5" />
+                        </button>
+                        <span className="font-heading text-[16px] font-bold text-texto">Taskflow</span>
+                    </header>
+                    <main className="min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
+                        {children}
+                    </main>
+                </div>
             </div>
             <DialogNewTarefa key={`criar-${aberturaCriar}`} open={criarAberto} onOpenChange={setCriarAberto} onCreateTarefa={criarTarefa} inicial={inicial}
                 titulo={tarefaPai ? `Nova sub-tarefa de ${tarefaPai.nome}` : undefined} projetoFixo={!!tarefaPai} {...opcoes} />

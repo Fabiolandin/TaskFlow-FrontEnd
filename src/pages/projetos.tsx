@@ -83,7 +83,7 @@ const Projetos = () => {
                     Novo Projeto
                 </Button>
             </div>
-            <div className="mt-4 p-4 grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 p-0 sm:grid-cols-2 sm:p-4 xl:grid-cols-3">
                 {resposta.data.map((projeto) => (
                     <article key={projeto.id} data-projeto-id={projeto.id} onClick={() => navigate(`/projetos/${projeto.id}`)}
                         className="flex min-h-45 cursor-pointer flex-col gap-3 rounded-lg border border-borda bg-superficie p-4 transition-colors hover:border-borda-forte hover:bg-cabecalho">

@@ -129,7 +129,7 @@ const Cronograma = ({ sprint, devs, statusOptions, souAdmin, idEu, recarga }: Cr
 
     const filtro = (rotulo: string, valor: number | null, onChange: (v: number | null) => void, opcoes: { id: number; nome: string }[]) => (
         <Select value={valor ? String(valor) : TODOS} onValueChange={(v) => onChange(v === TODOS ? null : Number(v))}>
-            <SelectTrigger aria-label={`Filtrar por ${rotulo}`} className="h-8! w-48 bg-elevado border-borda-forte text-[12.5px] text-texto"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label={`Filtrar por ${rotulo}`} className="h-8! w-full min-w-0 flex-1 bg-elevado sm:w-48 sm:flex-none border-borda-forte text-[12.5px] text-texto"><SelectValue /></SelectTrigger>
             <SelectContent className="bg-elevado border border-borda-forte text-texto">
                 <SelectGroup>
                     <SelectItem className="text-texto-suave" value={TODOS}>{rotulo}: todos</SelectItem>
@@ -153,7 +153,7 @@ const Cronograma = ({ sprint, devs, statusOptions, souAdmin, idEu, recarga }: Cr
                         <span className="font-mono text-[12.5px] text-texto">{pct(d.evolucao)}</span>
                     </div>
                 ))}
-                <div className="ml-auto flex gap-2">
+                <div className="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
                     {filtro("Projeto", idProjeto, setIdProjeto, projetos)}
                     {filtro("Dev", idUsuario, setIdUsuario, devs)}
                 </div>
