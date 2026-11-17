@@ -27,12 +27,28 @@ const nomeDoDia = (data: string) => {
 };
 const estiloCampo = "h-8 text-texto bg-elevado border-borda-forte text-[13px]";
 const estiloSelect = "h-8 w-full rounded-md border border-borda-forte bg-elevado px-2 text-[13px] text-texto";
-const rotuloItem = (i: ItemApontavel, mostrarSprint: boolean) => `${i.nome ?? "(sem nome)"}${mostrarSprint ? ` · ${i.sprint.nome}` : ""}`;
+//"Paredes › Planejamento": a trilha das mães distingue tarefas com o mesmo nome
+const rotuloItem = (i: ItemApontavel, mostrarSprint: boolean) =>
+    `${[...(i.trilha ?? []), i.nome ?? "(sem nome)"].join(" › ")}${mostrarSprint ? ` · ${i.sprint.nome}` : ""}`;
+
+//agrupa por projeto, na ordem em que aparecem (a da fila); avulsas ficam em "Sem projeto"
+const porProjeto = (itens: ItemApontavel[]) => {
+    const grupos = new Map<string, ItemApontavel[]>();
+    for (const i of itens) {
+        const nome = i.projeto?.nome ?? "Sem projeto";
+        grupos.set(nome, [...(grupos.get(nome) ?? []), i]);
+    }
+    return [...grupos];
+};
 
 const SeletorItem = ({ valor, itens, idSprintDoDia, rotulo, onChange }: { valor: number | null; itens: ItemApontavel[]; idSprintDoDia: number | null; rotulo: string; onChange: (id: number | null) => void }) => (
     <select aria-label={rotulo} className={estiloSelect} value={valor === null ? SEM_TAREFA : String(valor)} onChange={(e) => onChange(e.target.value === SEM_TAREFA ? null : Number(e.target.value))}>
         <option value={SEM_TAREFA}>Sem tarefa</option>
-        {itens.map((i) => <option key={i.id} value={i.id}>{rotuloItem(i, i.sprint.id !== idSprintDoDia)}</option>)}
+        {porProjeto(itens).map(([projeto, doProjeto]) => (
+            <optgroup key={projeto} label={projeto}>
+                {doProjeto.map((i) => <option key={i.id} value={i.id}>{rotuloItem(i, i.sprint.id !== idSprintDoDia)}</option>)}
+            </optgroup>
+        ))}
     </select>
 );
 

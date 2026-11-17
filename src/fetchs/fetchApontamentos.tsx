@@ -28,6 +28,9 @@ export interface ItemApontavel {
     id: number;
     nome: string | null;
     idTarefa: number | null;
+    //nomes das tarefas mãe, da raiz até a mãe direta; vazio em avulsa ou tarefa sem mãe
+    trilha?: string[];
+    projeto?: { id: number; nome: string } | null;
     sprint: { id: number; nome: string };
 }
 
